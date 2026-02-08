@@ -27,7 +27,7 @@ export const auth = betterAuth({
     cookiePrefix: APP_COOKIE_NAME, // Change this to your cookie prefix
     crossSubDomainCookies: {
       enabled: !isProd,
-      domain: '.shipfree.app', // Change this to your domain, if you are using a custom domain
+      domain: '.gradia.fr',
     },
     useSecureCookies: !isProd,
   },

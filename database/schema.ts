@@ -1,5 +1,9 @@
 import { relations } from 'drizzle-orm'
-import { pgTable, text, timestamp, boolean, index, decimal } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, index, decimal, integer, jsonb } from 'drizzle-orm/pg-core'
+
+// ============================================================================
+// Auth tables (Better-Auth managed)
+// ============================================================================
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -7,6 +11,8 @@ export const user = pgTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   image: text('image'),
+  role: text('role').default('client').notNull(), // 'client', 'manager', 'admin'
+  phone: text('phone'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -73,7 +79,110 @@ export const verification = pgTable(
   (table) => [index('verification_identifier_idx').on(table.identifier)]
 )
 
-// Payment system tables
+// ============================================================================
+// Gradia — Project tables
+// ============================================================================
+
+export const project = pgTable(
+  'project',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    managerId: text('manager_id')
+      .references(() => user.id, { onDelete: 'set null' }),
+    status: text('status').default('draft').notNull(),
+    title: text('title').notNull(),
+    aiSummary: jsonb('ai_summary'), // AiProjectSummary JSON
+    propertyType: text('property_type'),
+    surface: decimal('surface', { precision: 10, scale: 2 }),
+    rooms: jsonb('rooms'), // string[]
+    budgetRange: text('budget_range'),
+    style: text('style'),
+    address: text('address'),
+    postalCode: text('postal_code'),
+    city: text('city'),
+    paymentStatus: text('payment_status').default('pending').notNull(), // 'pending', 'paid', 'refunded'
+    stripeSessionId: text('stripe_session_id'),
+    paidAt: timestamp('paid_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('project_userId_idx').on(table.userId),
+    index('project_managerId_idx').on(table.managerId),
+    index('project_status_idx').on(table.status),
+  ]
+)
+
+export const message = pgTable(
+  'message',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    senderId: text('sender_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    content: text('content').notNull(),
+    attachments: jsonb('attachments'), // { name: string, url: string, type: string, size: number }[]
+    readAt: timestamp('read_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('message_projectId_idx').on(table.projectId),
+    index('message_senderId_idx').on(table.senderId),
+    index('message_createdAt_idx').on(table.createdAt),
+  ]
+)
+
+export const document = pgTable(
+  'document',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    uploadedById: text('uploaded_by_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    url: text('url').notNull(),
+    mimeType: text('mime_type'),
+    size: integer('size'), // bytes
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('document_projectId_idx').on(table.projectId),
+    index('document_uploadedById_idx').on(table.uploadedById),
+  ]
+)
+
+export const projectEvent = pgTable(
+  'project_event',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(), // 'status_change', 'assignment', 'payment', 'note'
+    data: jsonb('data'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('projectEvent_projectId_idx').on(table.projectId),
+  ]
+)
+
+// ============================================================================
+// Payment system tables (Stripe one-shot for Gradia)
+// ============================================================================
+
 export const customer = pgTable(
   'customer',
   {
@@ -81,8 +190,8 @@ export const customer = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    provider: text('provider').notNull(), // 'stripe', 'polar', 'dodo', 'creem', 'autumn'
-    providerCustomerId: text('provider_customer_id').notNull(), // Customer ID from payment provider
+    provider: text('provider').notNull(),
+    providerCustomerId: text('provider_customer_id').notNull(),
     email: text('email'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
@@ -104,13 +213,13 @@ export const subscription = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     customerId: text('customer_id').references(() => customer.id, { onDelete: 'set null' }),
-    provider: text('provider').notNull(), // 'stripe', 'polar', 'dodo', 'creem', 'autumn'
-    providerSubscriptionId: text('provider_subscription_id').notNull(), // Subscription ID from payment provider
-    status: text('status').notNull(), // 'active', 'canceled', 'past_due', 'trialing', 'incomplete'
-    plan: text('plan').notNull(), // 'free', 'starter', 'pro', 'enterprise', etc.
-    interval: text('interval'), // 'month', 'year', null for one-time
-    amount: decimal('amount', { precision: 10, scale: 2 }), // Price amount
-    currency: text('currency'), // 'usd', 'eur', etc.
+    provider: text('provider').notNull(),
+    providerSubscriptionId: text('provider_subscription_id').notNull(),
+    status: text('status').notNull(),
+    plan: text('plan').notNull(),
+    interval: text('interval'),
+    amount: decimal('amount', { precision: 10, scale: 2 }),
+    currency: text('currency'),
     currentPeriodStart: timestamp('current_period_start'),
     currentPeriodEnd: timestamp('current_period_end'),
     cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false).notNull(),
@@ -142,10 +251,10 @@ export const payment = pgTable(
     subscriptionId: text('subscription_id').references(() => subscription.id, {
       onDelete: 'set null',
     }),
-    provider: text('provider').notNull(), // 'stripe', 'polar', 'dodo', 'creem', 'autumn'
-    providerPaymentId: text('provider_payment_id').notNull(), // Payment ID from provider
-    type: text('type').notNull(), // 'subscription', 'one_time', 'refund'
-    status: text('status').notNull(), // 'succeeded', 'pending', 'failed', 'canceled'
+    provider: text('provider').notNull(),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    type: text('type').notNull(),
+    status: text('status').notNull(),
     amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
     currency: text('currency').notNull(),
     description: text('description'),
@@ -163,29 +272,17 @@ export const payment = pgTable(
   ]
 )
 
-export const premiumPurchase = pgTable(
-  'premium_purchase',
-  {
-    id: text('id').primaryKey(),
-    stripeSessionId: text('stripe_session_id').notNull().unique(),
-    stripeCustomerEmail: text('stripe_customer_email'),
-    githubEmail: text('github_email'),
-    githubUsername: text('github_username'),
-    twitterHandle: text('twitter_handle'),
-    amountPaid: decimal('amount_paid', { precision: 10, scale: 2 }),
-    currency: text('currency'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at')
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [index('premium_purchase_stripe_sessionId_idx').on(table.stripeSessionId)]
-)
+// ============================================================================
+// Relations
+// ============================================================================
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  projects: many(project, { relationName: 'clientProjects' }),
+  managedProjects: many(project, { relationName: 'managedProjects' }),
+  messages: many(message),
+  documents: many(document),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -202,7 +299,51 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }))
 
-// Payment system relations
+export const projectRelations = relations(project, ({ one, many }) => ({
+  client: one(user, {
+    fields: [project.userId],
+    references: [user.id],
+    relationName: 'clientProjects',
+  }),
+  manager: one(user, {
+    fields: [project.managerId],
+    references: [user.id],
+    relationName: 'managedProjects',
+  }),
+  messages: many(message),
+  documents: many(document),
+  events: many(projectEvent),
+}))
+
+export const messageRelations = relations(message, ({ one }) => ({
+  project: one(project, {
+    fields: [message.projectId],
+    references: [project.id],
+  }),
+  sender: one(user, {
+    fields: [message.senderId],
+    references: [user.id],
+  }),
+}))
+
+export const documentRelations = relations(document, ({ one }) => ({
+  project: one(project, {
+    fields: [document.projectId],
+    references: [project.id],
+  }),
+  uploadedBy: one(user, {
+    fields: [document.uploadedById],
+    references: [user.id],
+  }),
+}))
+
+export const projectEventRelations = relations(projectEvent, ({ one }) => ({
+  project: one(project, {
+    fields: [projectEvent.projectId],
+    references: [project.id],
+  }),
+}))
+
 export const customerRelations = relations(customer, ({ one, many }) => ({
   user: one(user, {
     fields: [customer.userId],

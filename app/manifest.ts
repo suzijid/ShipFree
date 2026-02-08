@@ -8,11 +8,11 @@ export default function manifest(): MetadataRoute.Manifest {
     name: brand.name,
     short_name: brand.name,
     description:
-      'ShipFree is a free open-source Next.js SaaS boilerplate alternative to ShipFast. Simplify and optimize your shipping process with modern web technologies like Supabase, Stripe, LemonSqueezy, Drizzle ORM, and Mailgun.',
+      'Gradia — Votre rénovation, pilotée de A à Z. Décrivez votre projet, obtenez une fiche structurée et un chef de projet dédié.',
     start_url: '/',
     scope: '/',
     display: 'standalone',
-    background_color: '#ffffff',
+    background_color: '#fafaf8',
     theme_color: brand.theme?.primaryColor,
     orientation: 'portrait-primary',
     icons: [
@@ -32,16 +32,16 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-    categories: ['developer tools', 'productivity', 'saas'],
+    categories: ['renovation', 'construction', 'project management'],
     shortcuts: [
       {
-        name: 'Open dashboard',
-        short_name: 'Dashboard',
-        description: 'Go to your ShipFree dashboard',
-        url: '/dashboard',
+        name: 'Mes projets',
+        short_name: 'Projets',
+        description: 'Accéder à vos projets de rénovation',
+        url: '/projects',
       },
     ],
-    lang: 'en-US',
+    lang: 'fr-FR',
     dir: 'ltr',
   }
 }

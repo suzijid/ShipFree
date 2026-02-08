@@ -18,24 +18,21 @@ export interface BrandConfig {
   theme?: ThemeColors
 }
 
-/**
- * Default brand configuration values
- */
 const defaultConfig: BrandConfig = {
-  name: 'ShipFree',
+  name: 'Gradia',
   logoUrl: undefined,
   faviconUrl: '/favicon/favicon.ico',
   customCssUrl: undefined,
-  supportEmail: 'hi@revoks.dev',
+  supportEmail: 'contact@gradia.fr',
   documentationUrl: undefined,
-  termsUrl: undefined,
-  privacyUrl: undefined,
+  termsUrl: '/terms',
+  privacyUrl: '/privacy',
   theme: {
-    primaryColor: '#701ffc',
-    primaryHoverColor: '#802fff',
-    accentColor: '#9d54ff',
-    accentHoverColor: '#a66fff',
-    backgroundColor: '#0c0c0c',
+    primaryColor: '#1a1a2e',
+    primaryHoverColor: '#16213e',
+    accentColor: '#c9a96e',
+    accentHoverColor: '#b8944f',
+    backgroundColor: '#fafaf8',
   },
 }
 
@@ -63,9 +60,6 @@ export const getBrandConfig = (): BrandConfig => {
   }
 }
 
-/**
- * Hook to use brand configuration in React components
- */
 export const useBrandConfig = () => {
   return getBrandConfig()
 }

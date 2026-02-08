@@ -30,9 +30,9 @@ const bricolageGrotesque = Bricolage_Grotesque({
 
 export const metadata: Metadata = {
   ...generateMetadata({
-    title: 'ShipFree - Turn Ideas Into Products, Fast',
+    title: 'Gradia — Votre rénovation, pilotée de A à Z',
     description:
-      'Ship your startup in days, not weeks. A production-ready Next.js boilerplate with auth, payments, and everything you need to launch fast. Free forever, open source.',
+      'Décrivez votre projet de rénovation, obtenez une fiche projet structurée et un chef de projet dédié pour piloter vos travaux.',
     isRootLayout: true,
   }),
   icons: {
