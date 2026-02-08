@@ -26,13 +26,13 @@ const validateEmailField = (emailValue: string): string[] => {
   const errors: string[] = []
 
   if (!emailValue || !emailValue.trim()) {
-    errors.push('Email is required.')
+    errors.push('L\'email est requis.')
     return errors
   }
 
   const validation = quickValidateEmail(emailValue.trim().toLowerCase())
   if (!validation.isValid) {
-    errors.push(validation.reason || 'Please enter a valid email address.')
+    errors.push(validation.reason || 'Veuillez entrer une adresse email valide.')
   }
 
   return errors
@@ -41,11 +41,11 @@ const validateEmailField = (emailValue: string): string[] => {
 const PASSWORD_VALIDATIONS = {
   required: {
     test: (value: string) => Boolean(value && typeof value === 'string'),
-    message: 'Password is required.',
+    message: 'Le mot de passe est requis.',
   },
   notEmpty: {
     test: (value: string) => value.trim().length > 0,
-    message: 'Password cannot be empty.',
+    message: 'Le mot de passe ne peut pas être vide.',
   },
 }
 
@@ -273,7 +273,7 @@ export default function LoginPage({
     if (!forgotPasswordEmail) {
       setResetStatus({
         type: 'error',
-        message: 'Please enter your email address',
+        message: 'Veuillez entrer votre adresse email',
       })
       return
     }
@@ -282,7 +282,7 @@ export default function LoginPage({
     if (!emailValidation.isValid) {
       setResetStatus({
         type: 'error',
-        message: 'Please enter a valid email address',
+        message: 'Veuillez entrer une adresse email valide',
       })
       return
     }
@@ -325,7 +325,7 @@ export default function LoginPage({
 
       setResetStatus({
         type: 'success',
-        message: 'Password reset link sent to your email',
+        message: 'Lien de réinitialisation envoyé par email',
       })
 
       setTimeout(() => {
@@ -349,20 +349,20 @@ export default function LoginPage({
   return (
     <>
       <div className='space-y-1 text-center'>
-        <h1 className='font-medium text-[32px] text-black tracking-tight'>Sign in</h1>
-        <p className='font-[380] text-[16px] text-muted-foreground'>Enter your details</p>
+        <h1 className='font-medium text-[32px] text-black tracking-tight'>Connexion</h1>
+        <p className='font-[380] text-[16px] text-muted-foreground'>Entrez vos identifiants</p>
       </div>
 
       <form onSubmit={onSubmit} className={`mt-8 space-y-8`}>
         <div className='space-y-6'>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='email'>Email</Label>
+              <Label htmlFor='email'>Adresse email</Label>
             </div>
             <Input
               id='email'
               name='email'
-              placeholder='Enter your email'
+              placeholder='votre@email.fr'
               required
               autoCapitalize='none'
               size={'lg'}
@@ -387,13 +387,13 @@ export default function LoginPage({
           </div>
           <div className='space-y-2'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='password'>Password</Label>
+              <Label htmlFor='password'>Mot de passe</Label>
               <button
                 type='button'
                 onClick={() => setForgotPasswordOpen(true)}
                 className='font-medium text-muted-foreground text-xs transition hover:text-foreground'
               >
-                Forgot password?
+                Mot de passe oublié ?
               </button>
             </div>
             <div className='relative'>
@@ -405,7 +405,7 @@ export default function LoginPage({
                 autoCapitalize='none'
                 autoComplete='current-password'
                 autoCorrect='off'
-                placeholder='Enter your password'
+                placeholder='Votre mot de passe'
                 value={password}
                 size={'lg'}
                 onChange={handlePasswordChange}
@@ -444,7 +444,7 @@ export default function LoginPage({
           disabled={isLoading}
         >
           <span className='flex items-center gap-1'>
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Connexion...' : 'Se connecter'}
             <span className='inline-flex transition-transform duration-200 group-hover:translate-x-0.5'>
               {isButtonHovered ? (
                 <ArrowRight className='h-4 w-4' aria-hidden='true' />
@@ -463,7 +463,7 @@ export default function LoginPage({
             <div className='w-full border-t border-gray-200' />
           </div>
           <div className='relative flex justify-center text-sm'>
-            <span className='bg-white px-4 font-[340] text-muted-foreground'>Or continue with</span>
+            <span className='bg-white px-4 font-[340] text-muted-foreground'>Ou continuer avec</span>
           </div>
         </div>
       )}
@@ -482,33 +482,33 @@ export default function LoginPage({
       )}
 
       <div className='pt-6 text-center text-[14px] font-light'>
-        <span className='font-normal'>Don't have an account? </span>
+        <span className='font-normal'>Pas encore de compte ? </span>
         <Link
           href={`/register?callbackUrl=${callbackUrl}`}
           className='font-medium text-(--brand-accent-hex) underline-offset-4 transition hover:text-(--brand-accent-hover-hex) hover:underline'
         >
-          Sign up
+          Créer un compte
         </Link>
       </div>
 
       <div className='absolute inset-x-0 bottom-0 px-8 pb-8 text-center text-[13px] font-[340] leading-relaxed text-muted-foreground sm:px-8 md:px-[44px]'>
-        By signing in, you agree to our{' '}
+        En vous connectant, vous acceptez nos{' '}
         <Link
           href='/terms'
           target='_blank'
           rel='noopener noreferrer'
           className='text-(--brand-accent-hex) underline-offset-4 transition hover:text-(--brand-accent-hover-hex) hover:underline'
         >
-          Terms of Service
+          Conditions d&apos;utilisation
         </Link>{' '}
-        and{' '}
+        et notre{' '}
         <Link
           href='/privacy'
           target='_blank'
           rel='noopener noreferrer'
           className='text-(--brand-accent-hex) underline-offset-4 transition hover:text-(--brand-accent-hover-hex) hover:underline'
         >
-          Privacy Policy
+          Politique de confidentialité
         </Link>
       </div>
 
@@ -516,23 +516,22 @@ export default function LoginPage({
         <DialogPopup>
           <DialogHeader>
             <DialogTitle className='text-xl font-semibold tracking-tight text-black'>
-              Reset Password
+              Réinitialiser le mot de passe
             </DialogTitle>
             <DialogDescription className='text-sm text-muted-foreground'>
-              Enter your email address and we'll send you a link to reset your password if your
-              account exists.
+              Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
             </DialogDescription>
           </DialogHeader>
           <DialogPanel className='space-y-4'>
             <div className='space-y-2'>
               <div className='flex items-center justify-between'>
-                <Label htmlFor='reset-email'>Email</Label>
+                <Label htmlFor='reset-email'>Adresse email</Label>
               </div>
               <Input
                 id='reset-email'
                 value={forgotPasswordEmail}
                 onChange={(event) => setForgotPasswordEmail(event.target.value)}
-                placeholder='Enter your email'
+                placeholder='votre@email.fr'
                 size={'lg'}
                 type='email'
                 className={cn(
@@ -563,7 +562,7 @@ export default function LoginPage({
               disabled={isSubmittingReset}
             >
               <span className='flex items-center gap-1'>
-                {isSubmittingReset ? 'Sending...' : 'Send Reset Link'}
+                {isSubmittingReset ? 'Envoi...' : 'Envoyer le lien'}
                 <span className='inline-flex transition-transform duration-200 group-hover:translate-x-0.5'>
                   {isResetButtonHovered ? (
                     <ArrowRight className='h-4 w-4' aria-hidden='true' />
