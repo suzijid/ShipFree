@@ -93,8 +93,11 @@ export const project = pgTable(
     managerId: text('manager_id')
       .references(() => user.id, { onDelete: 'set null' }),
     status: text('status').default('draft').notNull(),
+    phase: text('phase').default('cadrage').notNull(), // ProjectPhase
     title: text('title').notNull(),
-    aiSummary: jsonb('ai_summary'), // AiProjectSummary JSON
+    aiSummary: jsonb('ai_summary'), // AiProjectSummary + structuredSummary
+    modules: jsonb('modules').$type<{ design: boolean; works: boolean; wallet: boolean }>().default({ design: false, works: false, wallet: false }).notNull(),
+    services: jsonb('services').$type<{ architect: string; contractors: string; adminHelp: string }>().default({ architect: 'no', contractors: 'no', adminHelp: 'no' }).notNull(),
     propertyType: text('property_type'),
     surface: decimal('surface', { precision: 10, scale: 2 }),
     rooms: jsonb('rooms'), // string[]
@@ -103,7 +106,9 @@ export const project = pgTable(
     address: text('address'),
     postalCode: text('postal_code'),
     city: text('city'),
-    paymentStatus: text('payment_status').default('pending').notNull(), // 'pending', 'paid', 'refunded'
+    totalBudget: decimal('total_budget', { precision: 12, scale: 2 }),
+    progress: integer('progress').default(0).notNull(),
+    paymentStatus: text('payment_status').default('pending').notNull(),
     stripeSessionId: text('stripe_session_id'),
     paidAt: timestamp('paid_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -116,6 +121,67 @@ export const project = pgTable(
     index('project_userId_idx').on(table.userId),
     index('project_managerId_idx').on(table.managerId),
     index('project_status_idx').on(table.status),
+    index('project_phase_idx').on(table.phase),
+  ]
+)
+
+export const projectAction = pgTable(
+  'project_action',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    label: text('label').notNull(),
+    phase: text('phase').notNull(), // ProjectPhase
+    completed: boolean('completed').default(false).notNull(),
+    isCustom: boolean('is_custom').default(false).notNull(),
+    completedAt: timestamp('completed_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('projectAction_projectId_idx').on(table.projectId),
+    index('projectAction_phase_idx').on(table.phase),
+  ]
+)
+
+export const projectValidation = pgTable(
+  'project_validation',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    label: text('label').notNull(),
+    phase: text('phase').notNull(), // ProjectPhase
+    validatedAt: timestamp('validated_at'),
+    validatedBy: text('validated_by')
+      .references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('projectValidation_projectId_idx').on(table.projectId),
+  ]
+)
+
+export const paymentSchedule = pgTable(
+  'payment_schedule',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    label: text('label').notNull(),
+    amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+    dueDate: timestamp('due_date').notNull(),
+    status: text('status').default('pending').notNull(), // 'pending' | 'paid' | 'overdue'
+    invoiceUrl: text('invoice_url'),
+    paidAt: timestamp('paid_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('paymentSchedule_projectId_idx').on(table.projectId),
+    index('paymentSchedule_status_idx').on(table.status),
   ]
 )
 
@@ -126,6 +192,7 @@ export const message = pgTable(
     projectId: text('project_id')
       .notNull()
       .references(() => project.id, { onDelete: 'cascade' }),
+    channelId: text('channel_id'),
     senderId: text('sender_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
@@ -136,6 +203,7 @@ export const message = pgTable(
   },
   (table) => [
     index('message_projectId_idx').on(table.projectId),
+    index('message_channelId_idx').on(table.channelId),
     index('message_senderId_idx').on(table.senderId),
     index('message_createdAt_idx').on(table.createdAt),
   ]
@@ -155,11 +223,60 @@ export const document = pgTable(
     url: text('url').notNull(),
     mimeType: text('mime_type'),
     size: integer('size'), // bytes
+    category: text('category').default('photos').notNull(), // FileCategory
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     index('document_projectId_idx').on(table.projectId),
     index('document_uploadedById_idx').on(table.uploadedById),
+    index('document_category_idx').on(table.category),
+  ]
+)
+
+export const messageChannel = pgTable(
+  'message_channel',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    label: text('label').notNull(),
+    order: integer('order').default(0).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('messageChannel_projectId_idx').on(table.projectId),
+  ]
+)
+
+export const material = pgTable(
+  'material',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    category: text('category').notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    reference: text('reference'),
+    supplier: text('supplier'),
+    unitPrice: decimal('unit_price', { precision: 10, scale: 2 }),
+    quantity: decimal('quantity', { precision: 10, scale: 2 }),
+    unit: text('unit'),
+    status: text('status').default('shortlisted').notNull(),
+    imageUrl: text('image_url'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('material_projectId_idx').on(table.projectId),
+    index('material_category_idx').on(table.category),
+    index('material_status_idx').on(table.status),
   ]
 )
 
@@ -170,7 +287,7 @@ export const projectEvent = pgTable(
     projectId: text('project_id')
       .notNull()
       .references(() => project.id, { onDelete: 'cascade' }),
-    type: text('type').notNull(), // 'status_change', 'assignment', 'payment', 'note'
+    type: text('type').notNull(), // 'status_change', 'phase_change', 'module_activated', 'assignment', 'payment', 'note'
     data: jsonb('data'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
@@ -312,13 +429,47 @@ export const projectRelations = relations(project, ({ one, many }) => ({
   }),
   messages: many(message),
   documents: many(document),
+  channels: many(messageChannel),
+  materials: many(material),
   events: many(projectEvent),
+  actions: many(projectAction),
+  validations: many(projectValidation),
+  paymentSchedules: many(paymentSchedule),
+}))
+
+export const projectActionRelations = relations(projectAction, ({ one }) => ({
+  project: one(project, {
+    fields: [projectAction.projectId],
+    references: [project.id],
+  }),
+}))
+
+export const projectValidationRelations = relations(projectValidation, ({ one }) => ({
+  project: one(project, {
+    fields: [projectValidation.projectId],
+    references: [project.id],
+  }),
+  validator: one(user, {
+    fields: [projectValidation.validatedBy],
+    references: [user.id],
+  }),
+}))
+
+export const paymentScheduleRelations = relations(paymentSchedule, ({ one }) => ({
+  project: one(project, {
+    fields: [paymentSchedule.projectId],
+    references: [project.id],
+  }),
 }))
 
 export const messageRelations = relations(message, ({ one }) => ({
   project: one(project, {
     fields: [message.projectId],
     references: [project.id],
+  }),
+  channel: one(messageChannel, {
+    fields: [message.channelId],
+    references: [messageChannel.id],
   }),
   sender: one(user, {
     fields: [message.senderId],
@@ -334,6 +485,21 @@ export const documentRelations = relations(document, ({ one }) => ({
   uploadedBy: one(user, {
     fields: [document.uploadedById],
     references: [user.id],
+  }),
+}))
+
+export const messageChannelRelations = relations(messageChannel, ({ one, many }) => ({
+  project: one(project, {
+    fields: [messageChannel.projectId],
+    references: [project.id],
+  }),
+  messages: many(message),
+}))
+
+export const materialRelations = relations(material, ({ one }) => ({
+  project: one(project, {
+    fields: [material.projectId],
+    references: [project.id],
   }),
 }))
 

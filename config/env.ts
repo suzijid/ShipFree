@@ -7,8 +7,8 @@ export const env = createEnv({
     DATABASE_URL: z.string().optional(),
     BETTER_AUTH_SECRET: z.string().default('dev-secret-change-in-production'),
     BETTER_AUTH_URL: z.string().default('http://localhost:3000'),
-    BILLING_ENABLED: z.boolean().default(false),
-    EMAIL_VERIFICATION_ENABLED: z.boolean().default(false),
+    BILLING_ENABLED: z.string().optional(),
+    EMAIL_VERIFICATION_ENABLED: z.string().optional(),
 
     // Optional: Sentry
     SENTRY_DSN: z.string().optional(),
@@ -76,6 +76,7 @@ export const env = createEnv({
 
   client: {
     NEXT_PUBLIC_APP_URL: z.string().default('http://localhost:3000'),
+    NEXT_PUBLIC_CALCOM_LINK: z.string().optional(),
     // Lemon Squeezy product IDs (public)
     NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_STARTER_MONTHLY: z.string().optional(),
     NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_PRO_MONTHLY: z.string().optional(),
@@ -151,6 +152,7 @@ export const env = createEnv({
     LEMONSQUEEZY_STORE_ID: process.env.LEMONSQUEEZY_STORE_ID,
     LEMONSQUEEZY_WEBHOOK_SECRET: process.env.LEMONSQUEEZY_WEBHOOK_SECRET,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_CALCOM_LINK: process.env.NEXT_PUBLIC_CALCOM_LINK,
     NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_STARTER_MONTHLY:
       process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_STARTER_MONTHLY,
     NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_PRO_MONTHLY:

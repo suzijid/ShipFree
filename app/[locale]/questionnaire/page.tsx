@@ -17,6 +17,8 @@ import {
   Wrench,
   LayoutDashboard,
   Palette,
+  UserCog,
+  HardHat,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -47,6 +49,7 @@ interface QuestionnaireData {
   style: string
   budgetRange: BudgetRange | ''
   urgency: string
+  services: { architect: boolean; contractors: boolean; adminHelp: boolean }
   postalCode: string
   city: string
 }
@@ -61,9 +64,31 @@ const INITIAL_DATA: QuestionnaireData = {
   style: '',
   budgetRange: '',
   urgency: '',
+  services: { architect: false, contractors: false, adminHelp: false },
   postalCode: '',
   city: '',
 }
+
+const SERVICE_CHOICES = [
+  {
+    key: 'architect' as const,
+    label: 'Un architecte pour concevoir mon projet',
+    desc: 'Conception architecturale, esquisse, plans, suivi',
+    icon: Palette,
+  },
+  {
+    key: 'contractors' as const,
+    label: 'Un gestionnaire pour coordonner les travaux',
+    desc: 'Mise en relation artisans, suivi de chantier',
+    icon: HardHat,
+  },
+  {
+    key: 'adminHelp' as const,
+    label: 'Un suivi financier et des appels de fonds',
+    desc: 'Échéancier de paiement, suivi budget',
+    icon: Wallet,
+  },
+]
 
 const ROOMS = [
   { id: 'cuisine', label: 'Cuisine' },
@@ -127,6 +152,7 @@ const STEPS = [
   { id: 'details', label: 'Détails', icon: Ruler },
   { id: 'description', label: 'Description', icon: PaintBucket },
   { id: 'budget', label: 'Budget', icon: Wallet },
+  { id: 'services', label: 'Services', icon: UserCog },
   { id: 'summary', label: 'Récapitulatif', icon: CheckCircle2 },
 ]
 
@@ -161,7 +187,8 @@ export default function QuestionnairePage() {
       case 2: return true // surface and rooms are optional
       case 3: return data.workDescription.trim().length >= 10
       case 4: return data.budgetRange !== '' && data.urgency !== ''
-      case 5: return data.postalCode.trim().length >= 4 && data.city.trim().length >= 1
+      case 5: return true // services step — always valid
+      case 6: return data.postalCode.trim().length >= 4 && data.city.trim().length >= 1
       default: return false
     }
   }
@@ -184,8 +211,17 @@ export default function QuestionnairePage() {
     if (isSubmitting) return
     setIsSubmitting(true)
     try {
+      // Transform boolean services to 'yes'/'no' for the API
+      const payload = {
+        ...data,
+        services: {
+          architect: data.services.architect ? 'yes' : 'no',
+          contractors: data.services.contractors ? 'yes' : 'no',
+          adminHelp: data.services.adminHelp ? 'yes' : 'no',
+        },
+      }
       // Save to localStorage so data survives auth redirect
-      localStorage.setItem('gradia_questionnaire', JSON.stringify(data))
+      localStorage.setItem('gradia_questionnaire', JSON.stringify(payload))
       // Redirect to register (or login) — project will be created after auth
       router.push('/register?from=questionnaire')
     } catch {
@@ -513,8 +549,49 @@ export default function QuestionnairePage() {
           </StepContainer>
         )}
 
-        {/* Step 5: Summary + Location */}
+        {/* Step 5: Services */}
         {step === 5 && (
+          <StepContainer
+            title='De quels services avez-vous besoin ?'
+            subtitle='Sélectionnez les services qui vous intéressent. Vous pourrez modifier ce choix plus tard.'
+          >
+            <div className='grid gap-3'>
+              {SERVICE_CHOICES.map((svc) => {
+                const Icon = svc.icon
+                const checked = data.services[svc.key]
+                return (
+                  <button
+                    key={svc.key}
+                    type='button'
+                    onClick={() => setData((prev) => ({
+                      ...prev,
+                      services: { ...prev.services, [svc.key]: !prev.services[svc.key] },
+                    }))}
+                    className={`flex items-start gap-4 rounded-xl border-2 p-5 text-left transition-all duration-200 ${
+                      checked
+                        ? 'border-[#c9a96e] bg-[#c9a96e]/5 shadow-sm'
+                        : 'border-[#e8e4df] bg-white hover:border-[#d4d0cb] hover:shadow-sm'
+                    }`}
+                  >
+                    <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${checked ? 'text-[#c9a96e]' : 'text-[#9b9b9b]'}`} />
+                    <div>
+                      <p className={`text-sm font-semibold ${checked ? 'text-[#1a1a2e]' : 'text-[#6b6b6b]'}`}>
+                        {svc.label}
+                      </p>
+                      <p className='mt-0.5 text-xs text-[#9b9b9b]'>{svc.desc}</p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+            <p className='mt-4 text-center text-xs text-[#9b9b9b]'>
+              Vous ne savez pas encore ? Pas de souci, nous en parlerons lors du rendez-vous de cadrage.
+            </p>
+          </StepContainer>
+        )}
+
+        {/* Step 6: Summary + Location */}
+        {step === 6 && (
           <StepContainer
             title='Dernière étape !'
             subtitle='Indiquez la localisation du bien pour finaliser votre demande.'
@@ -562,6 +639,13 @@ export default function QuestionnairePage() {
                   )}
                   <SummaryRow label='Budget' value={data.budgetRange ? BUDGET_RANGE_LABELS[data.budgetRange] : '—'} />
                   <SummaryRow label='Calendrier' value={URGENCIES.find((u) => u.id === data.urgency)?.label || '—'} />
+                  <SummaryRow
+                    label='Services'
+                    value={
+                      SERVICE_CHOICES.filter((s) => data.services[s.key]).map((s) => s.label).join(', ')
+                      || 'Aucun sélectionné'
+                    }
+                  />
                   {data.style && (
                     <SummaryRow label='Style' value={STYLES.find((s) => s.id === data.style)?.label || '—'} />
                   )}

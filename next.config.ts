@@ -4,16 +4,6 @@ import type { NextConfig } from 'next'
 
 const withNextIntl = createNextIntlPlugin({
   requestConfig: './i18n/request.ts',
-  experimental: {
-    messages: {
-      // Relative path to the directory
-      path: './messages',
-      // Automatically detects locales based on `path`
-      locales: 'infer',
-      // Either 'json' or 'po'
-      format: 'json',
-    },
-  },
 })
 
 const nextConfig: NextConfig = {

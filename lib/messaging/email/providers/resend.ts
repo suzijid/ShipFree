@@ -1,5 +1,3 @@
-'use client'
-
 import { Resend } from 'resend'
 
 import { env } from '@/config/env'

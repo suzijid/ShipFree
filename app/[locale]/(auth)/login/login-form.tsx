@@ -254,6 +254,9 @@ export default function LoginPage({
         setIsLoading(false)
         return
       }
+
+      // Redirect after successful login
+      router.push(safeCallbackUrl)
     } catch (err: any) {
       if (err.message?.includes('not verified') || err.code?.includes('EMAIL_NOT_VERIFIED')) {
         if (typeof window !== 'undefined') {

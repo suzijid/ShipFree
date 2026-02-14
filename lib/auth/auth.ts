@@ -26,10 +26,10 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: APP_COOKIE_NAME, // Change this to your cookie prefix
     crossSubDomainCookies: {
-      enabled: !isProd,
+      enabled: isProd,
       domain: '.gradia.fr',
     },
-    useSecureCookies: !isProd,
+    useSecureCookies: isProd,
   },
 
   session: {

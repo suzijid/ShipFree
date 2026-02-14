@@ -177,6 +177,53 @@
   --warning-foreground: var(--color-amber-400);
 }
 
+/* ─── Dashboard Dark / Glassmorphism ──────────────────────────────────────── */
+
+.dashboard-dark {
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+  --gold: #c9a96e;
+  --gold-glow: rgba(201, 169, 110, 0.15);
+  --gold-muted: rgba(201, 169, 110, 0.6);
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --bg-base: #0a0a1a;
+  --bg-surface: #1a1a2e;
+
+  /* Override sidebar vars for BaseUI sidebar components */
+  --sidebar: transparent;
+  --sidebar-foreground: rgba(255, 255, 255, 0.95);
+  --sidebar-primary: #c9a96e;
+  --sidebar-primary-foreground: #0a0a1a;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: rgba(255, 255, 255, 0.95);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(201, 169, 110, 0.3);
+
+  /* Override general vars */
+  --background: #0a0a1a;
+  --foreground: rgba(255, 255, 255, 0.95);
+  --card: rgba(255, 255, 255, 0.05);
+  --card-foreground: rgba(255, 255, 255, 0.95);
+  --popover: #1a1a2e;
+  --popover-foreground: rgba(255, 255, 255, 0.95);
+  --primary: #c9a96e;
+  --primary-foreground: #0a0a1a;
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: rgba(255, 255, 255, 0.95);
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: rgba(255, 255, 255, 0.4);
+  --accent: rgba(255, 255, 255, 0.08);
+  --accent-foreground: rgba(255, 255, 255, 0.95);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: rgba(201, 169, 110, 0.3);
+  --destructive: oklch(0.704 0.191 22.216);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -187,4 +234,14 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
 }
