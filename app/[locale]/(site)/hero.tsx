@@ -1,62 +1,67 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
-import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { ArrowRight, Shield, Star, Users } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-
-export default function Hero() {
-  const t = useTranslations()
-
+const Hero = () => {
   return (
-    <main
-      id='hero'
-      className='flex min-h-screen flex-col items-center justify-start pt-32 pb-24 bg-[#fafaf8]'
-    >
-      <div className='mx-auto w-full max-w-6xl px-4 sm:px-6'>
-        <div className='mx-auto max-w-3xl text-center'>
-          <p
-            className='mb-6 text-sm font-medium tracking-widest text-[#c9a96e] uppercase'
-            style={{ fontFamily: 'var(--font-geist-mono)' }}
-          >
-            Maîtrise d'oeuvre digitale
-          </p>
-
-          <h1
-            className='text-balance text-4xl font-bold leading-tight tracking-tight text-[#1a1a2e] sm:text-5xl md:text-6xl lg:leading-[1.1]'
-            style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
-          >
-            {t('HERO_TITLE')}
-          </h1>
-
-          <p className='mx-auto mt-6 max-w-xl text-balance text-[#6b6b6b] md:text-lg leading-relaxed'>
-            {t('HERO_SUBTITLE')}
-          </p>
-
-          <div className='mx-auto mt-10 flex flex-col sm:flex-row items-center justify-center gap-4'>
-            <Link href='/questionnaire'>
-              <Button className='bg-[#1a1a2e] text-white hover:bg-[#16213e] h-12 px-8 text-base font-semibold group'>
-                {t('HERO_CTA')}
-                <ArrowRight className='ml-2 h-4 w-4 transition-transform group-hover:translate-x-1' />
-              </Button>
-            </Link>
-            <Link href='/#comment-ca-marche'>
-              <Button variant='outline' className='h-12 px-8 text-base font-medium border-[#e8e4df] text-[#1a1a2e] hover:bg-[#f0ede8]'>
-                {t('HERO_CTA_SECONDARY')}
-              </Button>
-            </Link>
+    <section className='relative pt-32 pb-20 md:pt-40 md:pb-28 bg-[#fafaf8] overflow-hidden'>
+      <div className='max-w-6xl mx-auto px-6'>
+        <div className='max-w-3xl mx-auto text-center'>
+          <div className='inline-flex items-center gap-2 rounded-full border border-[#e8e4df] bg-white/80 px-4 py-2 mb-8'>
+            <span className='size-2 rounded-full bg-[#c9a96e] animate-pulse' />
+            <span className='text-xs font-medium text-[#6b6b6b]'>
+              Gratuit pour démarrer &middot; Sans engagement &middot; Toute la France
+            </span>
           </div>
 
-          <div className='mt-16 flex items-center justify-center gap-8 text-sm text-[#9b9b9b]'>
-            <span>Gratuit pour démarrer</span>
-            <span className='h-1 w-1 rounded-full bg-[#d4d0cb]' />
-            <span>Sans engagement</span>
-            <span className='h-1 w-1 rounded-full bg-[#d4d0cb]' />
-            <span>Toute la France</span>
+          <h1
+            className='text-4xl md:text-6xl font-bold text-[#1a1a2e] leading-[1.1] tracking-tight mb-6'
+            style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
+          >
+            Votre rénovation, entre de{' '}
+            <span className='text-[#c9a96e]'>bonnes mains</span>
+          </h1>
+
+          <p className='text-lg md:text-xl text-[#6b6b6b] mb-10 max-w-2xl mx-auto leading-relaxed'>
+            Des artisans vérifiés, des devis transparents et un suivi en temps réel.
+            Gradia sélectionne et coordonne les meilleurs professionnels pour votre projet.
+          </p>
+
+          <div className='flex flex-col sm:flex-row items-center justify-center gap-4 mb-12'>
+            <Link
+              href='/questionnaire'
+              className='flex items-center gap-2 bg-[#1a1a2e] text-white px-8 py-4 rounded-full text-base font-medium hover:bg-[#2d2d4e] transition-all shadow-lg shadow-[#1a1a2e]/10'
+            >
+              Décrivez votre projet
+              <ArrowRight className='size-4' />
+            </Link>
+            <a
+              href='#comment-ca-marche'
+              className='text-sm font-medium text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors px-6 py-4'
+            >
+              Comment ça marche ?
+            </a>
+          </div>
+
+          <div className='flex flex-wrap items-center justify-center gap-6 text-sm text-[#9b9b9b]'>
+            <div className='flex items-center gap-2'>
+              <Shield className='size-4 text-[#c9a96e]' />
+              <span>Artisans assurés</span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <Star className='size-4 text-[#c9a96e]' />
+              <span>Avis vérifiés</span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <Users className='size-4 text-[#c9a96e]' />
+              <span>Paiement sécurisé</span>
+            </div>
           </div>
         </div>
       </div>
-    </main>
+    </section>
   )
 }
+
+export default Hero

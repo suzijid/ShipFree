@@ -1,96 +1,81 @@
 'use client'
 
-import Link from 'next/link'
-import { X, Menu } from 'lucide-react'
 import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { Menu, X } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-
-export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const t = useTranslations()
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
+const Navbar = () => {
+  const [open, setOpen] = useState(false)
 
   return (
-    <nav className='fixed inset-x-0 top-0 z-30 border-b border-[#e8e4df] bg-[#fafaf8]/95 backdrop-blur-sm'>
-      <div className='mx-auto max-w-7xl flex h-14 items-center justify-between gap-8 px-4 sm:px-6'>
-        <div className='flex items-center gap-3'>
-          <Link href='/' className='flex items-center gap-2'>
-            <span
-              className='text-lg font-bold text-[#1a1a2e] tracking-tight'
-              style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
-            >
-              Gradia
-            </span>
-          </Link>
-        </div>
-
-        <div className='flex-1' />
-
-        <div className='flex items-center gap-6'>
-          <div className='hidden items-center gap-6 md:flex'>
-            <Link
-              href='/#comment-ca-marche'
-              className='text-sm font-medium text-[#6b6b6b] transition-colors duration-200 hover:text-[#1a1a2e]'
-            >
-              {t('NAV_HOW_IT_WORKS')}
-            </Link>
-            <Link
-              href='/login'
-              className='text-sm font-medium text-[#6b6b6b] transition-colors duration-200 hover:text-[#1a1a2e]'
-            >
-              {t('NAV_LOGIN')}
-            </Link>
+    <header className='fixed top-0 inset-x-0 z-50 bg-[#fafaf8]/80 backdrop-blur-lg border-b border-[#e8e4df]/50'>
+      <div className='max-w-6xl mx-auto px-6 h-16 flex items-center justify-between'>
+        <Link href='/' className='flex items-center gap-2'>
+          <div className='flex items-center justify-center size-8 rounded-xl bg-gradient-to-br from-[#c9a96e] to-[#b8944f] text-white shadow-sm'>
+            <span className='text-sm font-bold' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>G</span>
           </div>
-
-          <Link href='/questionnaire'>
-            <Button className='hidden md:flex bg-[#1a1a2e] text-white hover:bg-[#16213e] h-9 px-5 text-sm font-medium'>
-              {t('NAV_START_PROJECT')}
-            </Button>
-          </Link>
-
-          <button
-            type='button'
-            onClick={toggleMenu}
-            className='inline-flex items-center justify-center rounded-md p-2 text-[#6b6b6b] transition-colors hover:bg-[#f0ede8] hover:text-[#1a1a2e] md:hidden'
+          <span
+            className='text-lg font-semibold text-[#1a1a2e]'
+            style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
           >
-            <span className='sr-only'>Menu</span>
-            {isMenuOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
-          </button>
+            Gradia
+          </span>
+        </Link>
+
+        <nav className='hidden md:flex items-center gap-8'>
+          <a href='#comment-ca-marche' className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors'>
+            Comment ça marche
+          </a>
+          <a href='#garanties' className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors'>
+            Garanties
+          </a>
+          <a href='#tarifs' className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors'>
+            Tarifs
+          </a>
+          <a href='#faq' className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors'>
+            FAQ
+          </a>
+        </nav>
+
+        <div className='hidden md:flex items-center gap-3'>
+          <Link
+            href='/login'
+            className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors px-3 py-2'
+          >
+            Connexion
+          </Link>
+          <Link
+            href='/questionnaire'
+            className='text-sm font-medium bg-[#1a1a2e] text-white px-5 py-2.5 rounded-full hover:bg-[#2d2d4e] transition-colors'
+          >
+            Commencer
+          </Link>
         </div>
+
+        <button onClick={() => setOpen(!open)} className='md:hidden p-2'>
+          {open ? <X className='size-5 text-[#1a1a2e]' /> : <Menu className='size-5 text-[#1a1a2e]' />}
+        </button>
       </div>
 
-      {isMenuOpen && (
-        <div className='border-t border-[#e8e4df] md:hidden'>
-          <div className='mx-auto max-w-6xl space-y-1 px-4 sm:px-6 pb-3 pt-2'>
+      {open && (
+        <div className='md:hidden bg-[#fafaf8] border-t border-[#e8e4df] px-6 py-4 space-y-3'>
+          <a href='#comment-ca-marche' onClick={() => setOpen(false)} className='block text-sm text-[#6b6b6b] py-2'>Comment ça marche</a>
+          <a href='#garanties' onClick={() => setOpen(false)} className='block text-sm text-[#6b6b6b] py-2'>Garanties</a>
+          <a href='#tarifs' onClick={() => setOpen(false)} className='block text-sm text-[#6b6b6b] py-2'>Tarifs</a>
+          <a href='#faq' onClick={() => setOpen(false)} className='block text-sm text-[#6b6b6b] py-2'>FAQ</a>
+          <div className='pt-2 border-t border-[#e8e4df] space-y-2'>
+            <Link href='/login' className='block text-sm text-[#6b6b6b] py-2'>Connexion</Link>
             <Link
-              href='/#comment-ca-marche'
-              className='block rounded-md px-3 py-2 text-sm font-medium text-[#6b6b6b] transition-all duration-200 hover:bg-[#f0ede8] hover:text-[#1a1a2e]'
-              onClick={toggleMenu}
+              href='/questionnaire'
+              className='block text-center text-sm font-medium bg-[#1a1a2e] text-white px-5 py-2.5 rounded-full'
             >
-              {t('NAV_HOW_IT_WORKS')}
+              Commencer
             </Link>
-            <Link
-              href='/login'
-              className='block rounded-md px-3 py-2 text-sm font-medium text-[#6b6b6b] transition-all duration-200 hover:bg-[#f0ede8] hover:text-[#1a1a2e]'
-              onClick={toggleMenu}
-            >
-              {t('NAV_LOGIN')}
-            </Link>
-            <div className='px-3 pt-2'>
-              <Link href='/questionnaire' onClick={toggleMenu}>
-                <Button className='w-full bg-[#1a1a2e] text-white hover:bg-[#16213e] h-10 text-sm font-medium'>
-                  {t('NAV_START_PROJECT')}
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       )}
-    </nav>
+    </header>
   )
 }
+
+export default Navbar

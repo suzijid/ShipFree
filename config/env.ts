@@ -47,6 +47,7 @@ export const env = createEnv({
     // Stripe
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    STRIPE_CONNECT_WEBHOOK_SECRET: z.string().optional(),
     STRIPE_PRICE_ID: z.string().optional(),
 
     // Polar
@@ -95,6 +96,12 @@ export const env = createEnv({
     NEXT_PUBLIC_POLAR_PRODUCT_PRO_MONTHLY: z.string().optional(),
     NEXT_PUBLIC_POLAR_PRODUCT_ENTERPRISE_MONTHLY: z.string().optional(),
 
+    // Polar — Gradia module product IDs (one-time)
+    NEXT_PUBLIC_POLAR_PRODUCT_MODULE_BASE: z.string().optional(),
+    NEXT_PUBLIC_POLAR_PRODUCT_MODULE_DESIGN: z.string().optional(),
+    NEXT_PUBLIC_POLAR_PRODUCT_MODULE_WORKS: z.string().optional(),
+    NEXT_PUBLIC_POLAR_PRODUCT_MODULE_WALLET: z.string().optional(),
+
   },
 
   // Variables available on both server and client
@@ -142,6 +149,7 @@ export const env = createEnv({
     PAYMENT_PROVIDER: process.env.PAYMENT_PROVIDER,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    STRIPE_CONNECT_WEBHOOK_SECRET: process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
     STRIPE_PRICE_ID: process.env.STRIPE_PRICE_ID,
     POLAR_ACCESS_TOKEN: process.env.POLAR_ACCESS_TOKEN,
     POLAR_WEBHOOK_SECRET: process.env.POLAR_WEBHOOK_SECRET,
@@ -172,6 +180,14 @@ export const env = createEnv({
     NEXT_PUBLIC_POLAR_PRODUCT_PRO_MONTHLY: process.env.NEXT_PUBLIC_POLAR_PRODUCT_PRO_MONTHLY,
     NEXT_PUBLIC_POLAR_PRODUCT_ENTERPRISE_MONTHLY:
       process.env.NEXT_PUBLIC_POLAR_PRODUCT_ENTERPRISE_MONTHLY,
+    NEXT_PUBLIC_POLAR_PRODUCT_MODULE_BASE:
+      process.env.NEXT_PUBLIC_POLAR_PRODUCT_MODULE_BASE,
+    NEXT_PUBLIC_POLAR_PRODUCT_MODULE_DESIGN:
+      process.env.NEXT_PUBLIC_POLAR_PRODUCT_MODULE_DESIGN,
+    NEXT_PUBLIC_POLAR_PRODUCT_MODULE_WORKS:
+      process.env.NEXT_PUBLIC_POLAR_PRODUCT_MODULE_WORKS,
+    NEXT_PUBLIC_POLAR_PRODUCT_MODULE_WALLET:
+      process.env.NEXT_PUBLIC_POLAR_PRODUCT_MODULE_WALLET,
   },
   emptyStringAsUndefined: true,
 })

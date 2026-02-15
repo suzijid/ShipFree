@@ -158,9 +158,9 @@ export const DocumentsContent = ({ projectId, documents }: DocumentsContentProps
 
       {/* Error banner */}
       {error && (
-        <div className='rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-400 flex items-center justify-between mb-4'>
+        <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-600 flex items-center justify-between mb-4'>
           <span>{error}</span>
-          <button onClick={() => setError(null)} className='ml-2 text-red-400/60 hover:text-red-400'>&times;</button>
+          <button onClick={() => setError(null)} className='ml-2 text-red-400 hover:text-red-600'>&times;</button>
         </div>
       )}
 
@@ -175,13 +175,13 @@ export const DocumentsContent = ({ projectId, documents }: DocumentsContentProps
                 onClick={() => setActiveCategory(cat.id)}
                 className={`flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-sm transition-all ${
                   activeCategory === cat.id
-                    ? 'bg-[#c9a96e]/15 text-[#c9a96e] font-medium'
-                    : 'bg-white/5 text-white/40 hover:bg-white/8 hover:text-white/60'
+                    ? 'bg-[#c9a96e]/10 text-[#a0854e] font-medium'
+                    : 'bg-[#f5f3f0] text-[#9b9b9b] hover:bg-[#ebe8e4] hover:text-[#6b6b6b]'
                 }`}
               >
                 {cat.label}
                 {count > 0 && (
-                  <span className={`text-xs ${activeCategory === cat.id ? 'text-[#c9a96e]/60' : 'text-white/20'}`}>
+                  <span className={`text-xs ${activeCategory === cat.id ? 'text-[#c9a96e]/60' : 'text-[#b5b5b5]'}`}>
                     {count}
                   </span>
                 )}
@@ -203,13 +203,13 @@ export const DocumentsContent = ({ projectId, documents }: DocumentsContentProps
       <div className='flex-1 overflow-y-auto'>
         {filteredDocs.length === 0 ? (
           <div className='flex flex-col items-center justify-center h-full'>
-            <FolderOpen className='size-8 text-white/15 mb-3' />
-            <p className='text-sm text-white/30'>
+            <FolderOpen className='size-8 text-[#ddd8d2] mb-3' />
+            <p className='text-sm text-[#9b9b9b]'>
               {activeCategory === 'all'
                 ? 'Aucun document pour le moment'
                 : `Aucun document dans "${FILE_CATEGORY_LABELS[activeCategory as FileCategory] || activeCategory}"`}
             </p>
-            <p className='text-xs text-white/20 mt-1'>Glissez-déposez ou cliquez sur Ajouter</p>
+            <p className='text-xs text-[#b5b5b5] mt-1'>Glissez-déposez ou cliquez sur Ajouter</p>
           </div>
         ) : (
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
@@ -222,7 +222,7 @@ export const DocumentsContent = ({ projectId, documents }: DocumentsContentProps
               >
                 <GlassCard hover className='p-4 group'>
                   <div className='flex items-start gap-3'>
-                    <div className='shrink-0 rounded-lg bg-white/5 p-2'>
+                    <div className='shrink-0 rounded-lg bg-[#f5f3f0] p-2'>
                       {doc.mimeType?.startsWith('image/') ? (
                         <Image className='size-5 text-[#c9a96e]' />
                       ) : (
@@ -230,8 +230,8 @@ export const DocumentsContent = ({ projectId, documents }: DocumentsContentProps
                       )}
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <p className='text-sm font-medium text-white/90 truncate'>{doc.name}</p>
-                      <div className='flex items-center gap-2 text-xs text-white/30 mt-0.5'>
+                      <p className='text-sm font-medium text-[#1a1a2e] truncate'>{doc.name}</p>
+                      <div className='flex items-center gap-2 text-xs text-[#9b9b9b] mt-0.5'>
                         <span>{FILE_CATEGORY_LABELS[doc.category as FileCategory] || doc.category}</span>
                         {doc.size && <span>{formatFileSize(doc.size)}</span>}
                         <span>
@@ -244,14 +244,14 @@ export const DocumentsContent = ({ projectId, documents }: DocumentsContentProps
                         href={doc.url}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='p-1.5 rounded-lg text-white/30 hover:bg-white/10 hover:text-white/60 transition-all'
+                        className='p-1.5 rounded-lg text-[#9b9b9b] hover:bg-[#f5f3f0] hover:text-[#6b6b6b] transition-all'
                       >
                         <Download className='size-4' />
                       </a>
                       <button
                         onClick={() => handleDelete(doc.id)}
                         disabled={deletingId === doc.id}
-                        className='p-1.5 rounded-lg text-white/30 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-400 transition-all disabled:opacity-50'
+                        className='p-1.5 rounded-lg text-[#9b9b9b] opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-50'
                       >
                         {deletingId === doc.id ? <Loader2 className='size-4 animate-spin' /> : <Trash2 className='size-4' />}
                       </button>

@@ -10,6 +10,7 @@ import type {
   PaymentAdapter,
   CheckoutOptions,
   CheckoutResult,
+  ModuleCheckoutOptions,
   CustomerData,
   SubscriptionData,
   PortalResult,
@@ -17,8 +18,8 @@ import type {
   WebhookResult,
   WebhookEventType,
 } from '../types'
-import type { PaymentProvider, PlanName } from '@/config/payments'
-import { getPriceConfig, paymentConfig } from '@/config/payments'
+import type { PaymentProvider, PlanName, GradiaModuleName } from '@/config/payments'
+import { getPriceConfig, paymentConfig, getModuleConfig } from '@/config/payments'
 import { env } from '@/config/env'
 
 export class PolarAdapter implements PaymentAdapter {
@@ -76,6 +77,37 @@ export class PolarAdapter implements PaymentAdapter {
     } catch (error) {
       console.error('Polar checkout creation error:', error)
       throw new Error('Failed to create Polar checkout session')
+    }
+  }
+
+  async createModuleCheckout(options: ModuleCheckoutOptions): Promise<CheckoutResult> {
+    const { module, projectId, userId, email, successUrl, cancelUrl } = options
+
+    const moduleConfig = getModuleConfig(module as GradiaModuleName)
+    if (!moduleConfig.productId) {
+      throw new Error(`No Polar product ID configured for module: ${module}`)
+    }
+
+    try {
+      const checkout = await this.polar.checkouts.create({
+        products: [moduleConfig.productId],
+        successUrl: successUrl || paymentConfig.providers.successUrl,
+        customerEmail: email,
+        customerMetadata: {
+          userId,
+          module,
+          projectId,
+          provider: 'polar',
+        },
+      })
+
+      return {
+        url: checkout.url,
+        sessionId: checkout.id,
+      }
+    } catch (error) {
+      console.error('Polar module checkout creation error:', error)
+      throw new Error('Failed to create Polar module checkout session')
     }
   }
 
@@ -223,6 +255,10 @@ export class PolarAdapter implements PaymentAdapter {
 
         case 'order.paid' as WebhookEventType: {
           const order = polarEvent.data
+          const metadata: Record<string, string> = {}
+          if (order.customerMetadata?.module) metadata.module = order.customerMetadata.module
+          if (order.customerMetadata?.projectId) metadata.projectId = order.customerMetadata.projectId
+
           return {
             processed: true,
             payment: {
@@ -237,6 +273,7 @@ export class PolarAdapter implements PaymentAdapter {
               currency: order.currency || 'usd',
               description: `Payment for ${order.product?.name || 'product'}`,
               provider: 'polar',
+              ...(Object.keys(metadata).length > 0 && { metadata }),
             },
           }
         }

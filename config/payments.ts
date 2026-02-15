@@ -272,3 +272,71 @@ export function isFreePlan(planName: PlanName): boolean {
 export function getAvailablePlans(): PlanName[] {
   return Object.keys(paymentConfig.plans) as PlanName[]
 }
+
+// ============================================================================
+// Gradia — Module-based pricing (one-time purchases per project)
+// ============================================================================
+
+export type GradiaModuleName = 'base' | 'design' | 'works' | 'wallet'
+
+export interface GradiaModuleConfig {
+  label: string
+  description: string
+  amount: number // in cents
+  currency: 'eur'
+  productId: string
+}
+
+export const GRADIA_MODULES: Record<GradiaModuleName, GradiaModuleConfig> = {
+  base: {
+    label: 'Base (cadrage + suivi)',
+    description: 'Rendez-vous de cadrage, fiche projet, suivi global',
+    amount: 29000,
+    currency: 'eur',
+    productId: process.env.NEXT_PUBLIC_POLAR_PRODUCT_MODULE_BASE || '',
+  },
+  design: {
+    label: 'Conception (architecte)',
+    description: 'Esquisse, APS, APD, choix matériaux',
+    amount: 39000,
+    currency: 'eur',
+    productId: process.env.NEXT_PUBLIC_POLAR_PRODUCT_MODULE_DESIGN || '',
+  },
+  works: {
+    label: 'Travaux (coordination)',
+    description: 'Suivi de chantier, coordination artisans',
+    amount: 39000,
+    currency: 'eur',
+    productId: process.env.NEXT_PUBLIC_POLAR_PRODUCT_MODULE_WORKS || '',
+  },
+  wallet: {
+    label: 'Finances (échéancier)',
+    description: 'Échéancier de paiement, appels de fonds',
+    amount: 19000,
+    currency: 'eur',
+    productId: process.env.NEXT_PUBLIC_POLAR_PRODUCT_MODULE_WALLET || '',
+  },
+}
+
+export function getModuleConfig(module: GradiaModuleName): GradiaModuleConfig {
+  return GRADIA_MODULES[module]
+}
+
+// ============================================================================
+// Gradia — Marketplace configuration
+// ============================================================================
+
+export const MARKETPLACE_CONFIG = {
+  commissionRate: 0.10,
+  stripeConnectCountry: 'FR',
+  currency: 'eur',
+} as const
+
+export type DesignServicePricingKey = 'consultation' | '2d_plans' | '3d_renders' | 'full_package'
+
+export const DESIGN_SERVICE_PRICING: Record<DesignServicePricingKey, { label: string; amount: number; currency: 'eur' }> = {
+  consultation: { label: 'Consultation déco', amount: 15000, currency: 'eur' },
+  '2d_plans': { label: 'Plans 2D', amount: 49000, currency: 'eur' },
+  '3d_renders': { label: 'Rendus 3D', amount: 79000, currency: 'eur' },
+  full_package: { label: 'Pack complet', amount: 119000, currency: 'eur' },
+}

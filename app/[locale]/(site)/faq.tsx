@@ -1,104 +1,78 @@
 'use client'
 
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionPanel,
-} from '@/components/ui/accordion'
-import Link from 'next/link'
+import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 
-export default function FAQ() {
-  const faqs = [
-    {
-      question: "What's included in the free version?",
-      answer:
-        "Everything you need to build: a full Next.js boilerplate with auth, payments, UI, SEO, and transactional emails. It's free forever under the MIT license.",
-    },
-    {
-      question: "What's in the pro version?",
-      answer:
-        'Pro adds one-click deploys, a CLI tool, advanced auth (roles & invites), automated emails, analytics hooks, lifetime updates, and priority support — built for founders who want to launch fast.',
-    },
-    {
-      question: "Do I lose access to the free version if I don't upgrade?",
-      answer:
-        'Nope. The free version stays open source and always available. Pro just saves you time and setup pain.',
-    },
-    {
-      question: 'Is it really a one-time payment?',
-      answer: 'Yep. $90 lifetime access. No subscriptions, no renewal fees, ever.',
-    },
-    {
-      question: 'Can I use it for commercial products?',
-      answer: 'Yes — both free and pro can be used to build and sell your own projects.',
-    },
-    {
-      question: 'What if I find a bug or issue?',
-      answer:
-        'Open an issue on GitHub or drop it in the Discord — we fix bugs fast, and pro users get priority patches + updates.',
-    },
-    {
-      question: 'Can I upgrade later?',
-      answer:
-        "Absolutely. You can start free, and when you're ready to go pro, your setup stays compatible.",
-    },
-    {
-      question: 'How often do you ship updates?',
-      answer:
-        'Bug fixes and small updates drop regularly; pro users get early access to new templates and features.',
-    },
-    {
-      question: 'What support does pro include?',
-      answer:
-        "Private Discord, priority replies, and lifetime updates. You'll never be stuck figuring things out alone.",
-    },
-  ]
+const FAQS = [
+  {
+    question: 'C\'est vraiment gratuit pour démarrer ?',
+    answer: 'Oui. Le questionnaire, la fiche projet par IA, le rendez-vous de cadrage et la sélection des artisans sont entièrement gratuits. Vous ne payez que lorsque vous acceptez un devis et que les travaux commencent.',
+  },
+  {
+    question: 'Comment sont sélectionnés les artisans ?',
+    answer: 'Chaque artisan de notre réseau est vérifié : assurance professionnelle à jour, certifications, et avis clients vérifiés. Notre équipe les sélectionne manuellement en fonction de votre projet.',
+  },
+  {
+    question: 'Comment fonctionne le paiement ?',
+    answer: 'Les paiements sont sécurisés via Stripe Connect et se font par jalons. Vous payez au fur et à mesure de l\'avancement des travaux, jamais en une seule fois. Gradia prélève une commission de 10% incluse dans le montant.',
+  },
+  {
+    question: 'Combien de temps prend le processus ?',
+    answer: 'Le questionnaire prend 5-10 minutes. Vous recevez des propositions d\'artisans sous 48-72h. Le délai total dépend de la nature de votre projet.',
+  },
+  {
+    question: 'Quelles garanties ai-je ?',
+    answer: 'Tous nos artisans sont assurés. Le paiement par jalons protège votre investissement. Le dashboard vous donne une visibilité totale sur l\'avancement. Et notre équipe vous accompagne en cas de problème.',
+  },
+  {
+    question: 'Quels types de travaux gérez-vous ?',
+    answer: 'Rénovations complètes, cuisines, salles de bain, plomberie, électricité, peinture, sols, façade, isolation... Nous couvrons tous les corps de métier du bâtiment pour les projets à partir de 5 000 €.',
+  },
+  {
+    question: 'Puis-je choisir mes artisans ?',
+    answer: 'Absolument. Nous vous proposons les artisans les plus adaptés, mais c\'est vous qui acceptez ou refusez chaque devis. Vous gardez le contrôle total.',
+  },
+]
+
+const FAQ = () => {
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section id='faq' className='py-24 border-t border-b border-[#E4E4E7] bg-[#F4F4F5]'>
-      <div className='mx-auto max-w-6xl px-4 sm:px-6'>
-        <h2
-          className='text-center text-sm font-medium text-muted-foreground mb-8'
-          style={{ fontFamily: 'var(--font-geist-mono)' }}
-        >
-          FAQ
-        </h2>
-        <div className='grid md:grid-cols-2 gap-12 md:gap-16'>
-            {/* Left Section */}
-            <div>
-              <h2 className='text-4xl font-semibold tracking-tight mb-4'>
-                Frequently Asked Questions
-              </h2>
-              <p className='text-lg text-muted-foreground'>
-                Have another question?{' '}
-                <Link
-                  href='mailto:support@shipfree.app'
-                  className='underline underline-offset-4 hover:text-foreground transition-colors'
-                >
-                  Contact us by email
-                </Link>
-                .
-              </p>
-            </div>
-
-            {/* Right Section */}
-            <div>
-              <Accordion className='space-y-0'>
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} className='border-b border-[#E4E4E7] last:border-b-0'>
-                    <AccordionTrigger className='text-left py-4 text-base font-medium hover:no-underline'>
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionPanel className='text-muted-foreground text-sm pb-4'>
-                      {faq.answer}
-                    </AccordionPanel>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          </div>
+    <section id='faq' className='py-20 md:py-28 bg-[#fafaf8]'>
+      <div className='max-w-3xl mx-auto px-6'>
+        <div className='text-center mb-16'>
+          <p className='text-sm font-medium text-[#c9a96e] mb-3 uppercase tracking-wider'>FAQ</p>
+          <h2
+            className='text-3xl md:text-4xl font-bold text-[#1a1a2e]'
+            style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
+          >
+            Questions fréquentes
+          </h2>
         </div>
+
+        <div className='space-y-3'>
+          {FAQS.map((faq, i) => (
+            <div key={i} className='rounded-2xl border border-[#e8e4df] bg-white overflow-hidden'>
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className='flex items-center justify-between w-full px-6 py-4 text-left'
+              >
+                <span className='text-sm font-medium text-[#1a1a2e] pr-4'>{faq.question}</span>
+                <ChevronDown
+                  className={`size-5 text-[#9b9b9b] shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {openIndex === i && (
+                <div className='px-6 pb-4'>
+                  <p className='text-sm text-[#6b6b6b] leading-relaxed'>{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
   )
 }
+
+export default FAQ

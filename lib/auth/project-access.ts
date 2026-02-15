@@ -1,9 +1,9 @@
 import { eq, and, or } from 'drizzle-orm'
 
 import { db } from '@/database'
-import { project, user } from '@/database/schema'
+import { project, user, projectContractor, contractor } from '@/database/schema'
 
-export type ProjectAccessRole = 'owner' | 'manager' | 'admin'
+export type ProjectAccessRole = 'owner' | 'manager' | 'admin' | 'contractor'
 
 export interface ProjectAccessResult {
   project: typeof project.$inferSelect
@@ -18,6 +18,7 @@ export interface ProjectAccessResult {
  * - User is the project owner (project.userId === userId)
  * - User is the assigned manager (project.managerId === userId)
  * - User is an admin (user.role === 'admin')
+ * - User is a contractor assigned to the project
  */
 export const getProjectAccess = async (
   projectId: string,
@@ -59,6 +60,31 @@ export const getProjectAccess = async (
 
     if (adminProject) {
       return { project: adminProject, role: 'admin' }
+    }
+  }
+
+  // Check if user is a contractor assigned to this project
+  const [contractorAssignment] = await db
+    .select({ contractorId: projectContractor.contractorId })
+    .from(projectContractor)
+    .innerJoin(contractor, eq(contractor.id, projectContractor.contractorId))
+    .where(
+      and(
+        eq(projectContractor.projectId, projectId),
+        eq(contractor.userId, userId)
+      )
+    )
+    .limit(1)
+
+  if (contractorAssignment) {
+    const [contractorProject] = await db
+      .select()
+      .from(project)
+      .where(eq(project.id, projectId))
+      .limit(1)
+
+    if (contractorProject) {
+      return { project: contractorProject, role: 'contractor' }
     }
   }
 

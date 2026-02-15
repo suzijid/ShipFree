@@ -164,6 +164,7 @@ export const USER_ROLE = {
   CLIENT: 'client',
   MANAGER: 'manager',
   ADMIN: 'admin',
+  CONTRACTOR: 'contractor',
 } as const
 
 export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE]
@@ -172,6 +173,125 @@ export const USER_ROLE_LABELS: Record<UserRole, string> = {
   client: 'Client',
   manager: 'Chef de projet',
   admin: 'Administrateur',
+  contractor: 'Artisan',
+}
+
+// ─── Matching Status ──────────────────────────────────────────────────────────
+
+export const MATCHING_STATUS = {
+  OPEN: 'open',
+  MATCHING: 'matching',
+  MATCHED: 'matched',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+} as const
+
+export type MatchingStatus = (typeof MATCHING_STATUS)[keyof typeof MATCHING_STATUS]
+
+export const MATCHING_STATUS_LABELS: Record<MatchingStatus, string> = {
+  open: 'Ouvert',
+  matching: 'Recherche d\'artisans',
+  matched: 'Artisans confirmés',
+  in_progress: 'Travaux en cours',
+  completed: 'Terminé',
+}
+
+// ─── Contractor Assignment Status ─────────────────────────────────────────────
+
+export const CONTRACTOR_ASSIGNMENT_STATUS = {
+  INVITED: 'invited',
+  PROPOSAL_SENT: 'proposal_sent',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+  ACTIVE: 'active',
+  COMPLETED: 'completed',
+} as const
+
+export type ContractorAssignmentStatus = (typeof CONTRACTOR_ASSIGNMENT_STATUS)[keyof typeof CONTRACTOR_ASSIGNMENT_STATUS]
+
+export const CONTRACTOR_ASSIGNMENT_STATUS_LABELS: Record<ContractorAssignmentStatus, string> = {
+  invited: 'Invité',
+  proposal_sent: 'Devis envoyé',
+  accepted: 'Accepté',
+  rejected: 'Refusé',
+  active: 'Actif',
+  completed: 'Terminé',
+}
+
+// ─── Proposal Status ──────────────────────────────────────────────────────────
+
+export const PROPOSAL_STATUS = {
+  DRAFT: 'draft',
+  SUBMITTED: 'submitted',
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+  REVISED: 'revised',
+} as const
+
+export type ProposalStatus = (typeof PROPOSAL_STATUS)[keyof typeof PROPOSAL_STATUS]
+
+export const PROPOSAL_STATUS_LABELS: Record<ProposalStatus, string> = {
+  draft: 'Brouillon',
+  submitted: 'Soumis',
+  accepted: 'Accepté',
+  rejected: 'Refusé',
+  revised: 'Révisé',
+}
+
+// ─── Contractor Specialties ───────────────────────────────────────────────────
+
+export const CONTRACTOR_SPECIALTIES = [
+  'plomberie',
+  'electricite',
+  'maconnerie',
+  'menuiserie',
+  'peinture',
+  'carrelage',
+  'chauffage_climatisation',
+  'isolation',
+  'cuisine',
+  'salle_de_bain',
+  'toiture',
+  'facade',
+  'demolition',
+  'general',
+] as const
+
+export type ContractorSpecialty = (typeof CONTRACTOR_SPECIALTIES)[number]
+
+export const CONTRACTOR_SPECIALTY_LABELS: Record<ContractorSpecialty, string> = {
+  plomberie: 'Plomberie',
+  electricite: 'Électricité',
+  maconnerie: 'Maçonnerie',
+  menuiserie: 'Menuiserie',
+  peinture: 'Peinture',
+  carrelage: 'Carrelage',
+  chauffage_climatisation: 'Chauffage / Climatisation',
+  isolation: 'Isolation',
+  cuisine: 'Cuisine',
+  salle_de_bain: 'Salle de bain',
+  toiture: 'Toiture',
+  facade: 'Façade',
+  demolition: 'Démolition',
+  general: 'Général / Multi-corps',
+}
+
+// ─── Design Service Types ─────────────────────────────────────────────────────
+
+export const DESIGN_SERVICE_TYPES = [
+  'consultation',
+  '2d_plans',
+  '3d_renders',
+  'full_package',
+] as const
+
+export type DesignServiceType = (typeof DESIGN_SERVICE_TYPES)[number]
+
+export const DESIGN_SERVICE_TYPE_LABELS: Record<DesignServiceType, string> = {
+  consultation: 'Consultation déco',
+  '2d_plans': 'Plans 2D',
+  '3d_renders': 'Rendus 3D',
+  full_package: 'Pack complet',
 }
 
 // ─── Property Types ─────────────────────────────────────────────────────────
@@ -232,13 +352,63 @@ export const BUDGET_RANGE_LABELS: Record<BudgetRange, string> = {
 
 export const MIN_PROJECT_BUDGET = 5000
 
+// ─── Ownership Status ──────────────────────────────────────────────────────
+
+export const OWNERSHIP_STATUSES = ['owner', 'buying', 'tenant'] as const
+
+export type OwnershipStatus = (typeof OWNERSHIP_STATUSES)[number]
+
+export const OWNERSHIP_STATUS_LABELS: Record<OwnershipStatus, string> = {
+  owner: 'Propriétaire',
+  buying: 'Sur le point de signer',
+  tenant: 'Locataire',
+}
+
+// ─── Design Level ──────────────────────────────────────────────────────────
+
+export const DESIGN_LEVELS = ['full', 'moderate', 'none', 'undecided'] as const
+
+export type DesignLevel = (typeof DESIGN_LEVELS)[number]
+
+export const DESIGN_LEVEL_LABELS: Record<DesignLevel, string> = {
+  full: 'Aide complète',
+  moderate: 'Aide modérée',
+  none: 'Aucune aide',
+  undecided: 'Indécis',
+}
+
+// ─── Involvement Level ─────────────────────────────────────────────────────
+
+export const INVOLVEMENT_LEVELS = ['very', 'moderate', 'low', 'undecided'] as const
+
+export type InvolvementLevel = (typeof INVOLVEMENT_LEVELS)[number]
+
+export const INVOLVEMENT_LEVEL_LABELS: Record<InvolvementLevel, string> = {
+  very: 'Très impliqué',
+  moderate: 'Assez impliqué',
+  low: 'Peu impliqué',
+  undecided: 'Indécis',
+}
+
+// ─── Top Priority ──────────────────────────────────────────────────────────
+
+export const TOP_PRIORITIES = ['speed', 'quality', 'price'] as const
+
+export type TopPriority = (typeof TOP_PRIORITIES)[number]
+
+export const TOP_PRIORITY_LABELS: Record<TopPriority, string> = {
+  speed: 'Rapidité',
+  quality: 'Qualité',
+  price: 'Prix',
+}
+
 // ─── AI Summary ─────────────────────────────────────────────────────────────
 
 /** Structured output from the AI questionnaire */
 export interface AiProjectSummary {
   propertyType: string
   surface: number | null
-  rooms: string[]
+  rooms: Record<string, number> | string[]
   renovationType: string
   workDescription: string
   constraints: string[]
@@ -246,6 +416,12 @@ export interface AiProjectSummary {
   budgetRange: string
   urgency: string
   additionalNotes: string
+  ownershipStatus?: string
+  designLevel?: string
+  involvementLevel?: string
+  topPriority?: string
+  postalCode?: string
+  city?: string
 }
 
 // ─── Payment Status (Stripe for MOE fee) ────────────────────────────────────

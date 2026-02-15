@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 
 import { getPaymentAdapter } from '@/lib/payments/service'
 import { db } from '@/database'
-import { customer, subscription, payment } from '@/database/schema'
+import { customer, subscription, payment, project, projectEvent } from '@/database/schema'
 import type { WebhookEvent } from '@/lib/payments/types'
 
 export async function POST(req: Request) {
@@ -213,6 +213,51 @@ export async function POST(req: Request) {
             currency: result.payment.currency,
             description: result.payment.description,
           })
+        }
+
+        // Gradia: activate module on project if metadata present
+        const meta = result.payment.metadata
+        if (meta?.projectId && meta?.module && result.payment.status === 'succeeded') {
+          const [proj] = await db
+            .select({ id: project.id, modules: project.modules, paymentStatus: project.paymentStatus })
+            .from(project)
+            .where(eq(project.id, meta.projectId))
+            .limit(1)
+
+          if (proj) {
+            const currentModules = (proj.modules || { design: false, works: false, wallet: false }) as {
+              design: boolean
+              works: boolean
+              wallet: boolean
+            }
+
+            if (meta.module === 'base') {
+              await db
+                .update(project)
+                .set({ paymentStatus: 'paid', paidAt: new Date() })
+                .where(eq(project.id, meta.projectId))
+            } else if (meta.module === 'design' || meta.module === 'works' || meta.module === 'wallet') {
+              await db
+                .update(project)
+                .set({
+                  modules: { ...currentModules, [meta.module]: true },
+                })
+                .where(eq(project.id, meta.projectId))
+            }
+
+            // Insert project event
+            await db.insert(projectEvent).values({
+              id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+              projectId: meta.projectId,
+              type: 'payment',
+              data: {
+                module: meta.module,
+                amount: result.payment.amount,
+                currency: result.payment.currency,
+                providerPaymentId: result.payment.providerPaymentId,
+              },
+            })
+          }
         }
       }
     }

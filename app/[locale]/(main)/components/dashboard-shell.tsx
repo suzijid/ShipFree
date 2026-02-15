@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -12,29 +13,19 @@ import {
   Wallet,
   Palette,
   HardHat,
+  Wrench,
+  Sparkles,
   ArrowLeft,
-  PanelLeftIcon,
+  Bell,
+  Menu,
+  X,
+  Clock,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react'
 
 import { signOut } from '@/lib/auth/auth-client'
 import { useOptionalProject } from './project-context'
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarMenuBadge,
-  SidebarInset,
-  SidebarSeparator,
-  useSidebar,
-} from '@/components/ui/sidebar'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 interface DashboardShellProps {
@@ -43,19 +34,121 @@ interface DashboardShellProps {
 }
 
 export const DashboardShell = ({ user, children }: DashboardShellProps) => {
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
+
   return (
-    <SidebarProvider>
-      <DashboardSidebar user={user} />
-      <SidebarInset className='!bg-transparent !shadow-none !rounded-none'>
-        <div className='flex-1 flex flex-col h-svh overflow-hidden'>
-          {children}
+    <div className='flex h-svh'>
+      {/* Desktop sidebar — collapsible */}
+      <aside
+        className={`hidden md:flex flex-col bg-white shadow-[1px_0_3px_rgba(0,0,0,0.03)] pt-6 pb-4 px-3 transition-all duration-300 ease-in-out shrink-0 ${
+          collapsed ? 'w-[68px]' : 'w-60'
+        }`}
+      >
+        <DesktopSidebar user={user} collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className='fixed inset-0 z-50 md:hidden'>
+          <div className='absolute inset-0 bg-black/30' onClick={() => setMobileOpen(false)} />
+          <aside className='relative z-10 flex w-64 h-full flex-col bg-white shadow-xl'>
+            <div className='flex items-center justify-between px-4 py-3 border-b border-[#e8e4df]'>
+              <Link href='/dashboard' className='flex items-center gap-2'>
+                <div className='flex items-center justify-center size-8 rounded-xl bg-gradient-to-br from-[#c9a96e] to-[#b8944f] text-white shadow-sm'>
+                  <span className='text-sm font-bold' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>G</span>
+                </div>
+                <span
+                  className='font-semibold text-[#1a1a2e]'
+                  style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
+                >
+                  Gradia
+                </span>
+              </Link>
+              <button onClick={() => setMobileOpen(false)} className='p-1.5 rounded-lg hover:bg-[#f5f3f0] text-[#9b9b9b]'>
+                <X className='size-5' />
+              </button>
+            </div>
+            <MobileSidebarContent user={user} onNavigate={() => setMobileOpen(false)} />
+          </aside>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      )}
+
+      <div className='flex-1 flex flex-col min-w-0'>
+        {/* Top header — white, h-14 */}
+        <header className='h-14 flex items-center px-4 md:px-6 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)] shrink-0'>
+          <button
+            onClick={() => setMobileOpen(true)}
+            className='md:hidden p-1.5 rounded-lg hover:bg-[#f5f3f0] text-[#9b9b9b] mr-3'
+          >
+            <Menu className='size-5' />
+          </button>
+          <Link href='/dashboard' className='flex items-center gap-2 md:hidden'>
+            <div className='flex items-center justify-center size-8 rounded-xl bg-gradient-to-br from-[#c9a96e] to-[#b8944f] text-white shadow-sm'>
+              <span className='text-sm font-bold' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>G</span>
+            </div>
+            <span
+              className='font-semibold text-[#1a1a2e] hidden sm:inline'
+              style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
+            >
+              Gradia
+            </span>
+          </Link>
+
+          <div className='ml-auto flex items-center gap-2'>
+            <ClockPill />
+            <div className='flex items-center gap-1.5 rounded-full border border-[#e8e4df] px-3 py-2 text-[#9b9b9b] hover:bg-[#f5f3f0] transition-colors cursor-pointer'>
+              <Bell className='size-3.5' />
+              <span className='hidden sm:inline text-xs font-medium text-[#1a1a2e]'>Notifications</span>
+              <span className='size-2 rounded-full bg-[#c9a96e]' />
+            </div>
+          </div>
+        </header>
+
+        <main className='flex-1 overflow-auto'>
+          {children}
+        </main>
+      </div>
+    </div>
   )
 }
 
-const DashboardSidebar = ({ user }: { user: { name: string; email: string } }) => {
+// ─── Clock pill ─────────────────────────────────────────────────
+
+const ClockPill = () => {
+  const [time, setTime] = useState('')
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date()
+      setTime(now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
+    }
+    update()
+    const id = setInterval(update, 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  if (!time) return null
+
+  return (
+    <div className='hidden sm:flex items-center gap-1.5 rounded-full border border-[#e8e4df] px-3 py-2 text-[#9b9b9b]'>
+      <Clock className='size-3.5' />
+      <span className='text-xs font-medium text-[#1a1a2e]'>{time}</span>
+    </div>
+  )
+}
+
+// ─── Desktop sidebar ────────────────────────────────────────────
+
+const DesktopSidebar = ({
+  user,
+  collapsed,
+  onToggle,
+}: {
+  user: { name: string; email: string }
+  collapsed: boolean
+  onToggle: () => void
+}) => {
   const pathname = usePathname()
   const router = useRouter()
   const projectCtx = useOptionalProject()
@@ -68,224 +161,259 @@ const DashboardSidebar = ({ user }: { user: { name: string; email: string } }) =
     router.push('/login')
   }
 
-  // Extract project ID from pathname
   const projectMatch = pathname.match(/\/dashboard\/projects\/([^/]+)/)
   const activeProjectId = projectMatch?.[1]
-
   const isProjectPage = !!activeProjectId
 
   return (
-    <Sidebar variant='sidebar' collapsible='icon'>
-      {/* Logo */}
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size='lg' render={<Link href='/dashboard' />}>
-              <div className='flex aspect-square size-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#c9a96e] to-[#b8944f] text-white shadow-[0_2px_8px_rgba(201,169,110,0.3)]'>
-                <span className='text-sm font-bold' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>G</span>
-              </div>
-              <div className='grid flex-1 text-left text-sm leading-tight'>
-                <span
-                  className='truncate font-semibold text-white/95'
-                  style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
-                >
-                  Gradia
-                </span>
-                <span className='truncate text-xs text-white/40'>Espace client</span>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-
-      <SidebarSeparator className='!bg-white/[0.06]' />
-
-      <SidebarContent data-tour='sidebar-nav'>
-        {isProjectPage && projectCtx ? (
-          /* ─── Project-specific navigation ─── */
-          <>
-            <SidebarGroup>
-              <SidebarGroupLabel className='!text-white/30 uppercase text-[10px] tracking-widest'>
-                {projectCtx.project.title}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <ProjectNavItem
-                    href={`/dashboard/projects/${activeProjectId}/overview`}
-                    icon={LayoutDashboard}
-                    label='Vue d&apos;ensemble'
-                    pathname={pathname}
-                  />
-                  <ProjectNavItem
-                    href={`/dashboard/projects/${activeProjectId}/messages`}
-                    icon={MessageSquare}
-                    label='Messages'
-                    pathname={pathname}
-                  />
-                  <ProjectNavItem
-                    href={`/dashboard/projects/${activeProjectId}/documents`}
-                    icon={FileText}
-                    label='Documents'
-                    pathname={pathname}
-                  />
-                  {(projectCtx.project.modules.wallet || projectCtx.project.paymentStatus === 'paid') && (
-                    <ProjectNavItem
-                      href={`/dashboard/projects/${activeProjectId}/finances`}
-                      icon={Wallet}
-                      label='Finances'
-                      pathname={pathname}
-                    />
-                  )}
-                  {projectCtx.project.modules.design && (
-                    <ProjectNavItem
-                      href={`/dashboard/projects/${activeProjectId}/conception`}
-                      icon={Palette}
-                      label='Conception'
-                      pathname={pathname}
-                    />
-                  )}
-                  {projectCtx.project.modules.works && (
-                    <ProjectNavItem
-                      href={`/dashboard/projects/${activeProjectId}/travaux`}
-                      icon={HardHat}
-                      label='Travaux'
-                      pathname={pathname}
-                    />
-                  )}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator className='!bg-white/[0.06]' />
-
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      tooltip='Retour aux projets'
-                      render={<Link href='/dashboard' />}
-                      className='!text-white/40 hover:!text-white/70'
-                    >
-                      <ArrowLeft className='size-4' />
-                      <span>Retour aux projets</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </>
-        ) : (
-          /* ─── Default navigation ─── */
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={pathname.endsWith('/dashboard') || pathname.endsWith('/dashboard/')}
-                    tooltip='Mes projets'
-                    render={<Link href='/dashboard' />}
-                  >
-                    <FolderKanban className='size-4' />
-                    <span>Mes projets</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={pathname.includes('/questionnaire')}
-                    tooltip='Nouveau projet'
-                    render={<Link href='/questionnaire' />}
-                  >
-                    <Plus className='size-4' />
-                    <span>Nouveau projet</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+    <>
+      {/* Logo + collapse toggle */}
+      <div className={`flex items-center mb-6 ${collapsed ? 'justify-center' : 'justify-between px-3'}`}>
+        <Link href='/dashboard' className='flex items-center gap-2'>
+          <div className='flex items-center justify-center size-8 rounded-xl bg-gradient-to-br from-[#c9a96e] to-[#b8944f] text-white shadow-sm shrink-0'>
+            <span className='text-sm font-bold' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>G</span>
+          </div>
+          {!collapsed && (
+            <span
+              className='font-semibold text-[#1a1a2e]'
+              style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
+            >
+              Gradia
+            </span>
+          )}
+        </Link>
+        {!collapsed && (
+          <button
+            onClick={onToggle}
+            className='p-1.5 rounded-lg text-[#9b9b9b] hover:bg-[#f5f3f0] hover:text-[#1a1a2e] transition-colors'
+            title='Réduire le menu'
+          >
+            <ChevronsLeft className='size-4' />
+          </button>
         )}
-      </SidebarContent>
-
-      {/* Sidebar trigger (collapse/expand) */}
-      <div className='px-2 pb-1'>
-        <SidebarCollapseButton />
       </div>
 
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <div className='flex items-center gap-2 px-2 py-1.5'>
-              <Avatar className='size-8 rounded-xl'>
-                <AvatarFallback className='rounded-xl bg-gradient-to-br from-[#c9a96e]/20 to-[#c9a96e]/5 text-[#c9a96e] text-xs font-medium border border-white/[0.08]'>
-                  {getInitials(user.name || user.email)}
-                </AvatarFallback>
-              </Avatar>
-              <div className='grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden'>
-                <span className='truncate text-xs font-semibold text-white/90'>{user.name}</span>
-                <span className='truncate text-xs text-white/30'>{user.email}</span>
+      {/* Expand button when collapsed */}
+      {collapsed && (
+        <button
+          onClick={onToggle}
+          className='flex items-center justify-center p-1.5 rounded-lg text-[#9b9b9b] hover:bg-[#f5f3f0] hover:text-[#1a1a2e] transition-colors mb-4 mx-auto'
+          title='Agrandir le menu'
+        >
+          <ChevronsRight className='size-4' />
+        </button>
+      )}
+
+      <nav className='flex flex-col gap-1 flex-1'>
+        {isProjectPage && projectCtx ? (
+          <>
+            <NavItem href={`/dashboard/projects/${activeProjectId}/overview`} icon={LayoutDashboard} label='Vue d&apos;ensemble' pathname={pathname} collapsed={collapsed} />
+            <NavItem href={`/dashboard/projects/${activeProjectId}/messages`} icon={MessageSquare} label='Messages' pathname={pathname} collapsed={collapsed} />
+            <NavItem href={`/dashboard/projects/${activeProjectId}/documents`} icon={FileText} label='Documents' pathname={pathname} collapsed={collapsed} />
+            {(projectCtx.project.modules.wallet || projectCtx.project.paymentStatus === 'paid') && (
+              <NavItem href={`/dashboard/projects/${activeProjectId}/finances`} icon={Wallet} label='Finances' pathname={pathname} collapsed={collapsed} />
+            )}
+            {projectCtx.project.modules.design && (
+              <NavItem href={`/dashboard/projects/${activeProjectId}/conception`} icon={Palette} label='Conception' pathname={pathname} collapsed={collapsed} />
+            )}
+            <NavItem href={`/dashboard/projects/${activeProjectId}/artisans`} icon={Wrench} label='Artisans' pathname={pathname} collapsed={collapsed} />
+            <NavItem href={`/dashboard/projects/${activeProjectId}/design-services`} icon={Sparkles} label='Design' pathname={pathname} collapsed={collapsed} />
+            {projectCtx.project.modules.works && (
+              <NavItem href={`/dashboard/projects/${activeProjectId}/travaux`} icon={HardHat} label='Travaux' pathname={pathname} collapsed={collapsed} />
+            )}
+            <div className='my-2 w-full border-t border-[#e8e4df]' />
+            <NavItem href='/dashboard' icon={ArrowLeft} label='Retour aux projets' pathname='' collapsed={collapsed} />
+          </>
+        ) : (
+          <>
+            <NavItem href='/dashboard' icon={FolderKanban} label='Mes projets' pathname={pathname} exact collapsed={collapsed} />
+            <NavItem href='/questionnaire' icon={Plus} label='Nouveau projet' pathname={pathname} collapsed={collapsed} />
+          </>
+        )}
+      </nav>
+
+      {/* User footer */}
+      <div className='border-t border-[#e8e4df] pt-3 mt-auto'>
+        <div className={`flex items-center gap-3 py-2 ${collapsed ? 'justify-center' : 'px-3'}`}>
+          <Avatar className='size-8 rounded-xl shrink-0'>
+            <AvatarFallback className='rounded-xl bg-[#f5f3f0] text-[#1a1a2e] text-xs font-medium border border-[#e8e4df]'>
+              {getInitials(user.name || user.email)}
+            </AvatarFallback>
+          </Avatar>
+          {!collapsed && (
+            <>
+              <div className='flex-1 min-w-0'>
+                <p className='text-sm font-medium text-[#1a1a2e] truncate'>{user.name}</p>
+                <p className='text-xs text-[#9b9b9b] truncate'>{user.email}</p>
               </div>
               <button
                 onClick={handleSignOut}
-                className='ml-auto rounded-lg p-1.5 text-white/30 hover:bg-white/10 hover:text-white/60 transition-colors group-data-[collapsible=icon]:hidden'
+                className='p-1.5 rounded-lg text-[#9b9b9b] hover:bg-[#f5f3f0] hover:text-[#1a1a2e] transition-colors'
                 title='Se déconnecter'
               >
                 <LogOut className='size-4' />
               </button>
-            </div>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+            </>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
 
-const ProjectNavItem = ({
+// ─── Desktop nav item (icon + label) ────────────────────────────
+
+const NavItem = ({
   href,
   icon: Icon,
   label,
   pathname,
-  badge,
+  exact = false,
+  collapsed = false,
 }: {
   href: string
   icon: typeof LayoutDashboard
   label: string
   pathname: string
-  badge?: number
+  exact?: boolean
+  collapsed?: boolean
 }) => {
-  // Check if this nav item is active
-  const hrefPath = href.split('/').slice(-1)[0]
-  const isActive = pathname.includes(`/${hrefPath}`)
+  const hrefSegment = href.split('/').slice(-1)[0]
+  const isActive = exact
+    ? pathname.endsWith('/dashboard') || pathname.endsWith('/dashboard/')
+    : pathname.includes(`/${hrefSegment}`)
 
   return (
-    <SidebarMenuItem>
-      <SidebarMenuButton
-        isActive={isActive}
-        tooltip={label}
-        render={<Link href={href} />}
-        className={isActive ? '!bg-white/10 !border-l-2 !border-[#c9a96e] !rounded-l-none' : ''}
-      >
-        <Icon className='size-4' />
-        <span>{label}</span>
-      </SidebarMenuButton>
-      {badge && badge > 0 && (
-        <SidebarMenuBadge className='!bg-[#c9a96e]/15 !text-[#c9a96e]'>
-          {badge}
-        </SidebarMenuBadge>
-      )}
-    </SidebarMenuItem>
+    <Link
+      href={href}
+      title={collapsed ? label : undefined}
+      className={`flex items-center rounded-xl py-2.5 text-sm transition-all ${
+        collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+      } ${
+        isActive
+          ? 'bg-[#1a1a2e] text-white font-medium'
+          : 'text-[#6b6b6b] hover:bg-[#f5f3f0] hover:text-[#1a1a2e]'
+      }`}
+    >
+      <Icon className='size-5 shrink-0' />
+      {!collapsed && <span>{label}</span>}
+    </Link>
   )
 }
 
-const SidebarCollapseButton = () => {
-  const { toggleSidebar } = useSidebar()
+// ─── Mobile sidebar content ─────────────────────────────────────
+
+const MobileSidebarContent = ({
+  user,
+  onNavigate,
+}: {
+  user: { name: string; email: string }
+  onNavigate: () => void
+}) => {
+  const pathname = usePathname()
+  const router = useRouter()
+  const projectCtx = useOptionalProject()
+
+  const getInitials = (name: string) =>
+    name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/login')
+  }
+
+  const projectMatch = pathname.match(/\/dashboard\/projects\/([^/]+)/)
+  const activeProjectId = projectMatch?.[1]
+  const isProjectPage = !!activeProjectId
 
   return (
-    <button
-      onClick={toggleSidebar}
-      className='flex items-center gap-2 w-full rounded-lg px-2 py-1.5 text-xs text-white/25 hover:bg-white/5 hover:text-white/40 transition-colors group-data-[collapsible=icon]:justify-center'
+    <>
+      <nav className='flex-1 p-3 space-y-1 overflow-y-auto'>
+        {isProjectPage && projectCtx ? (
+          <>
+            <MobileNavItem href={`/dashboard/projects/${activeProjectId}/overview`} icon={LayoutDashboard} label='Vue d&apos;ensemble' pathname={pathname} onNavigate={onNavigate} />
+            <MobileNavItem href={`/dashboard/projects/${activeProjectId}/messages`} icon={MessageSquare} label='Messages' pathname={pathname} onNavigate={onNavigate} />
+            <MobileNavItem href={`/dashboard/projects/${activeProjectId}/documents`} icon={FileText} label='Documents' pathname={pathname} onNavigate={onNavigate} />
+            {(projectCtx.project.modules.wallet || projectCtx.project.paymentStatus === 'paid') && (
+              <MobileNavItem href={`/dashboard/projects/${activeProjectId}/finances`} icon={Wallet} label='Finances' pathname={pathname} onNavigate={onNavigate} />
+            )}
+            {projectCtx.project.modules.design && (
+              <MobileNavItem href={`/dashboard/projects/${activeProjectId}/conception`} icon={Palette} label='Conception' pathname={pathname} onNavigate={onNavigate} />
+            )}
+            <MobileNavItem href={`/dashboard/projects/${activeProjectId}/artisans`} icon={Wrench} label='Artisans' pathname={pathname} onNavigate={onNavigate} />
+            <MobileNavItem href={`/dashboard/projects/${activeProjectId}/design-services`} icon={Sparkles} label='Design' pathname={pathname} onNavigate={onNavigate} />
+            {projectCtx.project.modules.works && (
+              <MobileNavItem href={`/dashboard/projects/${activeProjectId}/travaux`} icon={HardHat} label='Travaux' pathname={pathname} onNavigate={onNavigate} />
+            )}
+            <div className='my-2 border-t border-[#e8e4df]' />
+            <MobileNavItem href='/dashboard' icon={ArrowLeft} label='Retour aux projets' pathname='' onNavigate={onNavigate} />
+          </>
+        ) : (
+          <>
+            <MobileNavItem href='/dashboard' icon={FolderKanban} label='Mes projets' pathname={pathname} onNavigate={onNavigate} exact />
+            <MobileNavItem href='/questionnaire' icon={Plus} label='Nouveau projet' pathname={pathname} onNavigate={onNavigate} />
+          </>
+        )}
+      </nav>
+
+      <div className='border-t border-[#e8e4df] p-3'>
+        <div className='flex items-center gap-3 px-3 py-2'>
+          <Avatar className='size-8 rounded-xl'>
+            <AvatarFallback className='rounded-xl bg-[#f5f3f0] text-[#1a1a2e] text-xs font-medium border border-[#e8e4df]'>
+              {getInitials(user.name || user.email)}
+            </AvatarFallback>
+          </Avatar>
+          <div className='flex-1 min-w-0'>
+            <p className='text-sm font-medium text-[#1a1a2e] truncate'>{user.name}</p>
+            <p className='text-xs text-[#9b9b9b] truncate'>{user.email}</p>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className='p-1.5 rounded-lg text-[#9b9b9b] hover:bg-[#f5f3f0] hover:text-[#1a1a2e] transition-colors'
+            title='Se déconnecter'
+          >
+            <LogOut className='size-4' />
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ─── Mobile nav item ────────────────────────────────────────────
+
+const MobileNavItem = ({
+  href,
+  icon: Icon,
+  label,
+  pathname,
+  onNavigate,
+  exact = false,
+}: {
+  href: string
+  icon: typeof LayoutDashboard
+  label: string
+  pathname: string
+  onNavigate: () => void
+  exact?: boolean
+}) => {
+  const hrefSegment = href.split('/').slice(-1)[0]
+  const isActive = exact
+    ? pathname.endsWith('/dashboard') || pathname.endsWith('/dashboard/')
+    : pathname.includes(`/${hrefSegment}`)
+
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
+        isActive
+          ? 'bg-[#1a1a2e] text-white font-medium'
+          : 'text-[#6b6b6b] hover:bg-[#f5f3f0] hover:text-[#1a1a2e]'
+      }`}
     >
-      <PanelLeftIcon className='size-4' />
-      <span className='group-data-[collapsible=icon]:hidden'>Réduire</span>
-    </button>
+      <Icon className='size-5' />
+      <span>{label}</span>
+    </Link>
   )
 }

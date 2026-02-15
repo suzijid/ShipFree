@@ -108,6 +108,7 @@ export const project = pgTable(
     city: text('city'),
     totalBudget: decimal('total_budget', { precision: 12, scale: 2 }),
     progress: integer('progress').default(0).notNull(),
+    matchingStatus: text('matching_status').default('open').notNull(), // 'open'|'matching'|'matched'|'in_progress'|'completed'
     paymentStatus: text('payment_status').default('pending').notNull(),
     stripeSessionId: text('stripe_session_id'),
     paidAt: timestamp('paid_at'),
@@ -177,11 +178,15 @@ export const paymentSchedule = pgTable(
     status: text('status').default('pending').notNull(), // 'pending' | 'paid' | 'overdue'
     invoiceUrl: text('invoice_url'),
     paidAt: timestamp('paid_at'),
+    contractorId: text('contractor_id'),
+    stripeTransferId: text('stripe_transfer_id'),
+    commissionAmount: decimal('commission_amount', { precision: 10, scale: 2 }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     index('paymentSchedule_projectId_idx').on(table.projectId),
     index('paymentSchedule_status_idx').on(table.status),
+    index('paymentSchedule_contractorId_idx').on(table.contractorId),
   ]
 )
 
@@ -297,6 +302,145 @@ export const projectEvent = pgTable(
 )
 
 // ============================================================================
+// Gradia — Marketplace tables
+// ============================================================================
+
+export const contractor = pgTable(
+  'contractor',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    companyName: text('company_name').notNull(),
+    siret: text('siret'),
+    specialties: jsonb('specialties').$type<string[]>().default([]).notNull(),
+    serviceArea: jsonb('service_area').$type<string[]>().default([]).notNull(), // codes département
+    description: text('description'),
+    portfolioImages: jsonb('portfolio_images').$type<string[]>().default([]),
+    certifications: jsonb('certifications').$type<string[]>().default([]),
+    insuranceExpiry: timestamp('insurance_expiry'),
+    stripeConnectAccountId: text('stripe_connect_account_id'),
+    stripeConnectStatus: text('stripe_connect_status').default('not_started').notNull(), // 'not_started'|'onboarding'|'active'|'restricted'
+    isVerified: boolean('is_verified').default(false).notNull(),
+    verifiedAt: timestamp('verified_at'),
+    rating: decimal('rating', { precision: 3, scale: 2 }),
+    reviewCount: integer('review_count').default(0).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('contractor_userId_idx').on(table.userId),
+    index('contractor_stripeConnectStatus_idx').on(table.stripeConnectStatus),
+    index('contractor_isVerified_idx').on(table.isVerified),
+  ]
+)
+
+export const projectContractor = pgTable(
+  'project_contractor',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    contractorId: text('contractor_id')
+      .notNull()
+      .references(() => contractor.id, { onDelete: 'cascade' }),
+    specialty: text('specialty').notNull(),
+    status: text('status').default('invited').notNull(), // 'invited'|'proposal_sent'|'accepted'|'rejected'|'active'|'completed'
+    assignedAt: timestamp('assigned_at').defaultNow().notNull(),
+    assignedBy: text('assigned_by')
+      .references(() => user.id, { onDelete: 'set null' }),
+  },
+  (table) => [
+    index('projectContractor_projectId_idx').on(table.projectId),
+    index('projectContractor_contractorId_idx').on(table.contractorId),
+    index('projectContractor_status_idx').on(table.status),
+  ]
+)
+
+export const proposal = pgTable(
+  'proposal',
+  {
+    id: text('id').primaryKey(),
+    projectContractorId: text('project_contractor_id')
+      .notNull()
+      .references(() => projectContractor.id, { onDelete: 'cascade' }),
+    amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+    description: text('description'),
+    estimatedDuration: text('estimated_duration'),
+    startDate: timestamp('start_date'),
+    attachments: jsonb('attachments').$type<{ name: string; url: string; type: string; size: number }[]>().default([]),
+    status: text('status').default('draft').notNull(), // 'draft'|'submitted'|'accepted'|'rejected'|'revised'
+    submittedAt: timestamp('submitted_at'),
+    respondedAt: timestamp('responded_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('proposal_projectContractorId_idx').on(table.projectContractorId),
+    index('proposal_status_idx').on(table.status),
+  ]
+)
+
+export const review = pgTable(
+  'review',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    contractorId: text('contractor_id')
+      .notNull()
+      .references(() => contractor.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    rating: integer('rating').notNull(), // 1-5
+    comment: text('comment'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('review_projectId_idx').on(table.projectId),
+    index('review_contractorId_idx').on(table.contractorId),
+  ]
+)
+
+export const designServiceBooking = pgTable(
+  'design_service_booking',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    designerId: text('designer_id')
+      .references(() => contractor.id, { onDelete: 'set null' }),
+    type: text('type').notNull(), // 'consultation'|'2d_plans'|'3d_renders'|'full_package'
+    status: text('status').default('pending').notNull(), // 'pending'|'scheduled'|'in_progress'|'delivered'|'cancelled'
+    amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+    stripePaymentId: text('stripe_payment_id'),
+    scheduledAt: timestamp('scheduled_at'),
+    deliveredAt: timestamp('delivered_at'),
+    deliverables: jsonb('deliverables').$type<{ name: string; url: string; type: string }[]>().default([]),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('designServiceBooking_projectId_idx').on(table.projectId),
+    index('designServiceBooking_userId_idx').on(table.userId),
+    index('designServiceBooking_status_idx').on(table.status),
+  ]
+)
+
+// ============================================================================
 // Payment system tables (Stripe one-shot for Gradia)
 // ============================================================================
 
@@ -400,6 +544,9 @@ export const userRelations = relations(user, ({ many }) => ({
   managedProjects: many(project, { relationName: 'managedProjects' }),
   messages: many(message),
   documents: many(document),
+  contractorProfile: many(contractor),
+  reviews: many(review),
+  designServiceBookings: many(designServiceBooking),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -435,6 +582,9 @@ export const projectRelations = relations(project, ({ one, many }) => ({
   actions: many(projectAction),
   validations: many(projectValidation),
   paymentSchedules: many(paymentSchedule),
+  projectContractors: many(projectContractor),
+  reviews: many(review),
+  designServiceBookings: many(designServiceBooking),
 }))
 
 export const projectActionRelations = relations(projectAction, ({ one }) => ({
@@ -459,6 +609,74 @@ export const paymentScheduleRelations = relations(paymentSchedule, ({ one }) => 
   project: one(project, {
     fields: [paymentSchedule.projectId],
     references: [project.id],
+  }),
+  contractor: one(contractor, {
+    fields: [paymentSchedule.contractorId],
+    references: [contractor.id],
+  }),
+}))
+
+export const contractorRelations = relations(contractor, ({ one, many }) => ({
+  user: one(user, {
+    fields: [contractor.userId],
+    references: [user.id],
+  }),
+  projectContractors: many(projectContractor),
+  reviews: many(review),
+  designServiceBookings: many(designServiceBooking),
+  paymentSchedules: many(paymentSchedule),
+}))
+
+export const projectContractorRelations = relations(projectContractor, ({ one, many }) => ({
+  project: one(project, {
+    fields: [projectContractor.projectId],
+    references: [project.id],
+  }),
+  contractor: one(contractor, {
+    fields: [projectContractor.contractorId],
+    references: [contractor.id],
+  }),
+  assignedByUser: one(user, {
+    fields: [projectContractor.assignedBy],
+    references: [user.id],
+  }),
+  proposals: many(proposal),
+}))
+
+export const proposalRelations = relations(proposal, ({ one }) => ({
+  projectContractor: one(projectContractor, {
+    fields: [proposal.projectContractorId],
+    references: [projectContractor.id],
+  }),
+}))
+
+export const reviewRelations = relations(review, ({ one }) => ({
+  project: one(project, {
+    fields: [review.projectId],
+    references: [project.id],
+  }),
+  contractor: one(contractor, {
+    fields: [review.contractorId],
+    references: [contractor.id],
+  }),
+  user: one(user, {
+    fields: [review.userId],
+    references: [user.id],
+  }),
+}))
+
+export const designServiceBookingRelations = relations(designServiceBooking, ({ one }) => ({
+  project: one(project, {
+    fields: [designServiceBooking.projectId],
+    references: [project.id],
+  }),
+  user: one(user, {
+    fields: [designServiceBooking.userId],
+    references: [user.id],
+  }),
+  designer: one(contractor, {
+    fields: [designServiceBooking.designerId],
+    references: [contractor.id],
   }),
 }))
 

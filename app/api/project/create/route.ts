@@ -25,9 +25,13 @@ const RENOVATION_LABELS: Record<string, string> = {
 
 const questionnaireSchema = z.object({
   propertyType: z.string().min(1),
+  ownershipStatus: z.enum(['owner', 'buying', 'tenant']).optional().default('owner'),
   renovationType: z.string().min(1),
   surface: z.string(),
-  rooms: z.array(z.string()),
+  rooms: z.union([
+    z.record(z.string(), z.number()),
+    z.array(z.string()),
+  ]).default({}),
   workDescription: z.string().min(10),
   constraints: z.array(z.string()),
   style: z.string(),
@@ -35,12 +39,27 @@ const questionnaireSchema = z.object({
   urgency: z.string().min(1),
   postalCode: z.string().min(4),
   city: z.string().min(1),
+  // New marketplace fields
+  designLevel: z.enum(['full', 'moderate', 'none', 'undecided']).optional().default('undecided'),
+  involvementLevel: z.enum(['very', 'moderate', 'low', 'undecided']).optional().default('undecided'),
+  topPriority: z.enum(['speed', 'quality', 'price']).optional(),
+  // Legacy services field (backward compat with old localStorage data)
   services: z.object({
     architect: z.enum(['yes', 'no', 'maybe']).default('no'),
     contractors: z.enum(['yes', 'no', 'maybe']).default('no'),
     adminHelp: z.enum(['yes', 'no', 'maybe']).default('no'),
-  }).default({ architect: 'no', contractors: 'no', adminHelp: 'no' }),
+  }).optional(),
 })
+
+/** Map designLevel to architect service choice */
+const designLevelToArchitect = (level: string): 'yes' | 'no' | 'maybe' => {
+  switch (level) {
+    case 'full': return 'yes'
+    case 'moderate': return 'yes'
+    case 'undecided': return 'maybe'
+    default: return 'no'
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -61,7 +80,15 @@ export async function POST(req: Request) {
     }
 
     const input = parsed.data
-    const services: ProjectServices = parsed.data.services
+
+    // Map to services — either from legacy field or from new designLevel
+    const services: ProjectServices = input.services
+      ? input.services
+      : {
+          architect: designLevelToArchitect(input.designLevel),
+          contractors: 'yes', // marketplace core — always on
+          adminHelp: 'yes',   // marketplace core — always on
+        }
 
     // Auto-generate title from questionnaire
     const propertyLabel = PROPERTY_TYPE_LABELS[input.propertyType as PropertyType] || input.propertyType
@@ -100,6 +127,10 @@ export async function POST(req: Request) {
         budgetRange: input.budgetRange,
         urgency: input.urgency,
         additionalNotes: '',
+        ownershipStatus: input.ownershipStatus,
+        designLevel: input.designLevel,
+        involvementLevel: input.involvementLevel,
+        topPriority: input.topPriority,
         postalCode: input.postalCode,
         city: input.city,
       },

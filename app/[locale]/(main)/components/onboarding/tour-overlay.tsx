@@ -14,7 +14,7 @@ export const TourOverlay = ({ targetRect, isModal }: TourOverlayProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className='fixed inset-0 z-[55] bg-black/70 backdrop-blur-sm'
+        className='fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm'
       />
     )
   }
@@ -25,7 +25,7 @@ export const TourOverlay = ({ targetRect, isModal }: TourOverlayProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className='fixed inset-0 z-[55] bg-black/60'
+        className='fixed inset-0 z-[55] bg-black/30'
       />
     )
   }
@@ -61,7 +61,7 @@ export const TourOverlay = ({ targetRect, isModal }: TourOverlayProps) => {
         <rect
           width='100%'
           height='100%'
-          fill='rgba(0,0,0,0.65)'
+          fill='rgba(0,0,0,0.35)'
           mask='url(#tour-mask)'
         />
         <motion.rect

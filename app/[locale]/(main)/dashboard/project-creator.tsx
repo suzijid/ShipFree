@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -29,6 +29,7 @@ export const ProjectCreator = () => {
       if (res.ok) {
         const { projectId } = await res.json()
         localStorage.removeItem('gradia_questionnaire')
+        router.refresh()
         router.push(`/dashboard/projects/${projectId}`)
       } else {
         const errorData = await res.json().catch(() => ({}))
@@ -59,15 +60,15 @@ export const ProjectCreator = () => {
   }
 
   const handleDismiss = () => {
-    localStorage.removeItem('gradia_questionnaire')
+    // Don't remove localStorage — preserve questionnaire data for retry on next visit
     setError(null)
-    router.refresh()
+    setIsCreating(false)
   }
 
   if (error) {
     return (
-      <div className='fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm'>
-        <div className='flex flex-col items-center gap-4 rounded-xl border border-red-200 bg-white p-8 shadow-lg max-w-md'>
+      <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
+        <div className='flex flex-col items-center gap-4 rounded-2xl border border-red-200 bg-white p-8 shadow-xl max-w-md'>
           <AlertCircle className='size-8 text-red-500' />
           <div className='text-center'>
             <p
@@ -76,7 +77,7 @@ export const ProjectCreator = () => {
             >
               Erreur de création
             </p>
-            <p className='text-sm text-muted-foreground mt-1'>
+            <p className='text-sm text-[#9b9b9b] mt-1'>
               {error}
             </p>
           </div>
@@ -84,7 +85,7 @@ export const ProjectCreator = () => {
             <Button
               variant='outline'
               onClick={handleDismiss}
-              className='border-[#e8e4df]'
+              className='border-[#e8e4df] text-[#6b6b6b] hover:bg-[#f5f3f0]'
             >
               Ignorer
             </Button>
@@ -104,8 +105,8 @@ export const ProjectCreator = () => {
   if (!isCreating) return null
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm'>
-      <div className='flex flex-col items-center gap-4 rounded-xl border border-[#e8e4df] bg-white p-8 shadow-lg'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
+      <div className='flex flex-col items-center gap-4 rounded-2xl border border-[#e8e4df] bg-white p-8 shadow-xl'>
         <Loader2 className='size-8 animate-spin text-[#c9a96e]' />
         <div className='text-center'>
           <p
@@ -114,7 +115,7 @@ export const ProjectCreator = () => {
           >
             Création de votre projet...
           </p>
-          <p className='text-sm text-muted-foreground mt-1'>
+          <p className='text-sm text-[#9b9b9b] mt-1'>
             Nous préparons votre fiche projet
           </p>
         </div>

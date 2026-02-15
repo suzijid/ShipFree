@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 
 import { auth } from '@/lib/auth/auth'
 import { db } from '@/database'
-import { user } from '@/database/schema'
-import { eq } from 'drizzle-orm'
+import { user, projectContractor, proposal } from '@/database/schema'
+import { eq, and, sql } from 'drizzle-orm'
 import { getProjectAccess } from '@/lib/auth/project-access'
 import { ProjectProvider, type ProjectData } from '../../../components/project-context'
 
@@ -35,16 +35,34 @@ export default async function ProjectLayout({
     adminHelp: string
   }
 
-  // Fetch manager name if assigned
-  let managerName: string | null = null
-  if (p.managerId) {
-    const [mgr] = await db
-      .select({ name: user.name })
-      .from(user)
-      .where(eq(user.id, p.managerId))
-      .limit(1)
-    managerName = mgr?.name ?? null
-  }
+  // Fetch manager name + marketplace counts in parallel
+  const [managerResult, contractorCountResult, proposalCountResult, acceptedProposalResult] = await Promise.all([
+    p.managerId
+      ? db.select({ name: user.name }).from(user).where(eq(user.id, p.managerId)).limit(1)
+      : Promise.resolve([]),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(projectContractor)
+      .where(eq(projectContractor.projectId, p.id)),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(proposal)
+      .innerJoin(projectContractor, eq(proposal.projectContractorId, projectContractor.id))
+      .where(and(
+        eq(projectContractor.projectId, p.id),
+        eq(proposal.status, 'submitted'),
+      )),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(proposal)
+      .innerJoin(projectContractor, eq(proposal.projectContractorId, projectContractor.id))
+      .where(and(
+        eq(projectContractor.projectId, p.id),
+        eq(proposal.status, 'accepted'),
+      )),
+  ])
+
+  const managerName = managerResult[0]?.name ?? null
 
   const projectData: ProjectData = {
     id: p.id,
@@ -62,7 +80,11 @@ export default async function ProjectLayout({
     postalCode: p.postalCode,
     city: p.city,
     paymentStatus: p.paymentStatus,
+    matchingStatus: p.matchingStatus,
     managerName,
+    contractorCount: contractorCountResult[0]?.count ?? 0,
+    proposalCount: proposalCountResult[0]?.count ?? 0,
+    acceptedProposalCount: acceptedProposalResult[0]?.count ?? 0,
     createdAt: p.createdAt.toISOString(),
   }
 

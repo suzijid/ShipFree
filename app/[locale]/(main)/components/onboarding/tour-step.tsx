@@ -33,8 +33,8 @@ export const TourStepTooltip = ({
         exit={{ opacity: 0, scale: 0.95 }}
         className='fixed inset-0 z-[60] flex items-center justify-center'
       >
-        <GlassCard className='max-w-md w-full mx-4 p-8 text-center border-[#c9a96e]/20 shadow-[0_0_40px_rgba(201,169,110,0.1)]'>
-          <div className='rounded-2xl bg-gradient-to-br from-[#c9a96e]/15 to-transparent p-4 inline-flex mb-4'>
+        <GlassCard className='max-w-md w-full mx-4 p-8 text-center border-[#c9a96e]/20 shadow-lg'>
+          <div className='rounded-2xl bg-gradient-to-br from-[#c9a96e]/10 to-transparent p-4 inline-flex mb-4'>
             <span
               className='text-3xl font-bold text-[#c9a96e]'
               style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
@@ -43,12 +43,12 @@ export const TourStepTooltip = ({
             </span>
           </div>
           <h3
-            className='text-xl font-bold text-white/95 mb-2'
+            className='text-xl font-bold text-[#1a1a2e] mb-2'
             style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
           >
             {step.title}
           </h3>
-          <p className='text-sm text-white/50 mb-6'>{step.description}</p>
+          <p className='text-sm text-[#9b9b9b] mb-6'>{step.description}</p>
           <div className='flex items-center justify-center gap-3'>
             {!isLast && (
               <GlassButton variant='ghost' size='sm' onClick={onSkip}>
@@ -100,16 +100,16 @@ export const TourStepTooltip = ({
       className='fixed z-[60]'
       style={style}
     >
-      <GlassCard className='max-w-sm w-72 p-5 border-[#c9a96e]/15 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'>
+      <GlassCard className='max-w-sm w-72 p-5 border-[#c9a96e]/15 shadow-lg'>
         <h4
-          className='text-sm font-semibold text-white/95 mb-1'
+          className='text-sm font-semibold text-[#1a1a2e] mb-1'
           style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
         >
           {step.title}
         </h4>
-        <p className='text-xs text-white/50 mb-4'>{step.description}</p>
+        <p className='text-xs text-[#9b9b9b] mb-4'>{step.description}</p>
         <div className='flex items-center justify-between'>
-          <span className='text-xs text-white/25'>
+          <span className='text-xs text-[#b5b5b5]'>
             {currentIndex + 1} / {totalSteps}
           </span>
           <div className='flex items-center gap-2'>

@@ -58,6 +58,7 @@ export interface PaymentData {
   amount: number
   currency: string
   description?: string
+  metadata?: Record<string, string>
 }
 
 /**
@@ -86,6 +87,18 @@ export interface CheckoutOptions {
   trialDays?: number
   userId: string
   email?: string
+}
+
+/**
+ * Module checkout options (Gradia one-time purchase per project)
+ */
+export interface ModuleCheckoutOptions {
+  module: string
+  projectId: string
+  userId: string
+  email?: string
+  successUrl?: string
+  cancelUrl?: string
 }
 
 /**

@@ -19,14 +19,18 @@ export interface ProjectData {
   postalCode: string | null
   city: string | null
   paymentStatus: string
+  matchingStatus: string
   managerName: string | null
+  contractorCount: number
+  proposalCount: number
+  acceptedProposalCount: number
   createdAt: string
 }
 
 interface ProjectContextValue {
   project: ProjectData
   currentUserId: string
-  userRole: 'owner' | 'manager' | 'admin'
+  userRole: 'owner' | 'manager' | 'admin' | 'contractor'
 }
 
 const ProjectContext = createContext<ProjectContextValue | null>(null)
