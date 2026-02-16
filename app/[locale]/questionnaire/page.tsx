@@ -359,7 +359,7 @@ export default function QuestionnairePage() {
         if (res.ok) {
           const { projectId } = await res.json()
           localStorage.removeItem('gradia_questionnaire')
-          router.push(`/dashboard/projects/${projectId}`)
+          router.push(`/dashboard/projects/${projectId}/overview`)
           return
         }
         const errorData = await res.json().catch(() => ({}))

@@ -172,7 +172,7 @@ export default async function DashboardPage({
               {projects.map((p) => (
                 <Link
                   key={p.id}
-                  href={`/dashboard/projects/${p.id}`}
+                  href={`/dashboard/projects/${p.id}/overview`}
                   className='group flex items-start gap-4 rounded-xl p-3 transition-all duration-200 hover:bg-[#f5f3f0]'
                 >
                   <div className='rounded-xl bg-[#f5f3f0] border border-[#e8e4df] p-2.5 group-hover:bg-[#c9a96e]/10 group-hover:border-[#c9a96e]/20 transition-colors'>
@@ -258,7 +258,7 @@ export default async function DashboardPage({
                       </div>
                     </div>
                     <Link
-                      href={`/dashboard/projects/${p.id}`}
+                      href={`/dashboard/projects/${p.id}/overview`}
                       className='shrink-0 text-xs rounded-full border border-[#e8e4df] px-2.5 py-1 text-[#9b9b9b] hover:bg-[#f5f3f0] hover:text-[#1a1a2e] transition-colors'
                     >
                       Voir
