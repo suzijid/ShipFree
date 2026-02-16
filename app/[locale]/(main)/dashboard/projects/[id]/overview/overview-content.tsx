@@ -1394,13 +1394,15 @@ const DesignBanner = ({ projectId }: { projectId: string }) => {
             >
               En savoir plus
             </Link>
-            <Link
-              href={`/dashboard/projects/${projectId}/design-services`}
+            <a
+              href={`https://cal.com/${process.env.NEXT_PUBLIC_CALCOM_DESIGNER_LINK || 'expert-reno/designer-consultation'}`}
+              target='_blank'
+              rel='noopener noreferrer'
               className='inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 active:scale-[0.98] bg-gradient-to-r from-[#c9a96e] to-[#b8944f] text-white shadow-[0_2px_12px_rgba(201,169,110,0.25)] hover:shadow-[0_4px_20px_rgba(201,169,110,0.35)] hover:brightness-110 px-5 py-2.5 text-sm'
             >
               <Phone className='size-4' />
               Réserver un appel gratuit
-            </Link>
+            </a>
           </div>
         </div>
       </div>

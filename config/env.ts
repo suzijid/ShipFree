@@ -16,6 +16,9 @@ export const env = createEnv({
     // AI: Anthropic Claude
     ANTHROPIC_API_KEY: z.string().optional(),
 
+    // Cal.com
+    CAL_COM_API_KEY: z.string().optional(),
+
     // Optional: Cloudflare R2
     CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
     R2_ACCESS_KEY_ID: z.string().optional(),
@@ -78,6 +81,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_URL: z.string().default('http://localhost:3000'),
     NEXT_PUBLIC_CALCOM_LINK: z.string().optional(),
+    NEXT_PUBLIC_CALCOM_DESIGNER_LINK: z.string().optional(),
     // Lemon Squeezy product IDs (public)
     NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_STARTER_MONTHLY: z.string().optional(),
     NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_PRO_MONTHLY: z.string().optional(),
@@ -118,6 +122,7 @@ export const env = createEnv({
     EMAIL_VERIFICATION_ENABLED: process.env.EMAIL_VERIFICATION_ENABLED,
     SENTRY_DSN: process.env.SENTRY_DSN,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    CAL_COM_API_KEY: process.env.CAL_COM_API_KEY,
     CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
     R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
     R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
@@ -161,6 +166,7 @@ export const env = createEnv({
     LEMONSQUEEZY_WEBHOOK_SECRET: process.env.LEMONSQUEEZY_WEBHOOK_SECRET,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_CALCOM_LINK: process.env.NEXT_PUBLIC_CALCOM_LINK,
+    NEXT_PUBLIC_CALCOM_DESIGNER_LINK: process.env.NEXT_PUBLIC_CALCOM_DESIGNER_LINK,
     NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_STARTER_MONTHLY:
       process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_STARTER_MONTHLY,
     NEXT_PUBLIC_LEMONSQUEEZY_PRODUCT_PRO_MONTHLY:
