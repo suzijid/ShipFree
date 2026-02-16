@@ -82,6 +82,7 @@ export default async function OverviewPage({
   return (
     <OverviewContent
       userName={session.user.name ?? ''}
+      userEmail={session.user.email ?? ''}
       actions={actions.map((a) => ({
         id: a.id,
         label: a.label,

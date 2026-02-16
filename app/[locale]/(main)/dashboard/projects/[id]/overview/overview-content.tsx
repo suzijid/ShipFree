@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CalendarDays,
@@ -38,6 +38,7 @@ import {
 } from '@/config/project'
 import { cn } from '@/lib/utils'
 import { toastManager } from '@/components/ui/toast'
+import { getCalApi } from '@calcom/embed-react'
 
 // ─── Label maps ────────────────────────────────────────────────────────────
 
@@ -122,6 +123,7 @@ interface DesignBookingItem {
 
 interface OverviewContentProps {
   userName: string
+  userEmail: string
   actions: ActionItem[]
   validations: {
     id: string
@@ -204,7 +206,7 @@ const CheckoutSuccessBanner = () => {
   )
 }
 
-export const OverviewContent = ({ userName, actions: initialActions, validations, documents, events, payments, contractors, designBookings }: OverviewContentProps) => {
+export const OverviewContent = ({ userName, userEmail, actions: initialActions, validations, documents, events, payments, contractors, designBookings }: OverviewContentProps) => {
   const { project } = useProject()
   const questionnaire = project.aiSummary as QuestionnaireData | null
   const [actions, setActions] = useState<ActionItem[]>(initialActions)
@@ -247,13 +249,13 @@ export const OverviewContent = ({ userName, actions: initialActions, validations
 
         {/* ─── 3. Team & Booking (advisor + trust signals) ─────────── */}
         <motion.div variants={itemVariants}>
-          <TeamSection projectId={project.id} />
+          <TeamSection projectId={project.id} userName={userName} userEmail={userEmail} />
         </motion.div>
 
         {/* ─── 4. Design Banner (magazine-style, conditional) ──────── */}
         {showDesignBanner && (
           <motion.div variants={itemVariants}>
-            <DesignBanner projectId={project.id} />
+            <DesignBanner projectId={project.id} userName={userName} userEmail={userEmail} />
           </motion.div>
         )}
 
@@ -1205,9 +1207,33 @@ const ProcessSteps = ({
 
 // ─── Team Section (Advisor + Trust) ─────────────────────────────────────
 
-const TeamSection = ({ projectId }: { projectId: string }) => {
-  const [showCalEmbed, setShowCalEmbed] = useState(false)
-  const calLink = process.env.NEXT_PUBLIC_CALCOM_LINK
+const TeamSection = ({ projectId, userName, userEmail }: { projectId: string; userName: string; userEmail: string }) => {
+  const calLink = process.env.NEXT_PUBLIC_CALCOM_LINK || 'expert-reno/project-manager-meeting'
+
+  useEffect(() => {
+    (async () => {
+      const cal = await getCalApi({ namespace: 'expert' })
+      cal('ui', {
+        theme: 'light',
+        styles: { branding: { brandColor: '#c9a96e' } },
+        hideEventTypeDetails: false,
+        layout: 'month_view',
+      })
+    })()
+  }, [])
+
+  const openExpertModal = useCallback(async () => {
+    const cal = await getCalApi({ namespace: 'expert' })
+    cal('modal', {
+      calLink,
+      config: {
+        name: userName,
+        email: userEmail,
+        theme: 'light',
+        layout: 'month_view',
+      },
+    })
+  }, [calLink, userName, userEmail])
 
   return (
     <div>
@@ -1259,13 +1285,7 @@ const TeamSection = ({ projectId }: { projectId: string }) => {
             <GlassButton
               variant='gold'
               size='sm'
-              onClick={() => {
-                if (calLink) {
-                  setShowCalEmbed(true)
-                } else {
-                  window.open('mailto:contact@gradia.fr?subject=RDV%20Cadrage', '_blank')
-                }
-              }}
+              onClick={openExpertModal}
             >
               <CalendarDays className='size-3.5' />
               Réserver un créneau
@@ -1278,16 +1298,6 @@ const TeamSection = ({ projectId }: { projectId: string }) => {
               Message
             </GlassButton>
           </div>
-
-          {showCalEmbed && calLink && (
-            <div className='mt-3 rounded-xl overflow-hidden bg-[#f5f3f0]'>
-              <iframe
-                src={`https://cal.com/${calLink}?theme=light`}
-                className='w-full h-[400px] border-0'
-                title='Réserver un rendez-vous'
-              />
-            </div>
-          )}
 
           <CalendarDays className='absolute bottom-3 right-3 size-10 opacity-[0.04]' />
         </div>
@@ -1341,7 +1351,9 @@ const TeamSection = ({ projectId }: { projectId: string }) => {
 
 // ─── Design Banner (Magazine-style with photo) ──────────────────────────
 
-const DesignBanner = ({ projectId }: { projectId: string }) => {
+const DesignBanner = ({ projectId, userName, userEmail }: { projectId: string; userName: string; userEmail: string }) => {
+  const designCalLink = process.env.NEXT_PUBLIC_CALCOM_DESIGNER_LINK || 'expert-reno/designer-consultation'
+
   const DESIGN_FEATURES = [
     'Plans 2D du projet',
     'Design intérieur',
@@ -1349,6 +1361,31 @@ const DesignBanner = ({ projectId }: { projectId: string }) => {
     'Rendus 3D',
     'Coordination design',
   ]
+
+  useEffect(() => {
+    (async () => {
+      const cal = await getCalApi({ namespace: 'designer' })
+      cal('ui', {
+        theme: 'light',
+        styles: { branding: { brandColor: '#c9a96e' } },
+        hideEventTypeDetails: false,
+        layout: 'month_view',
+      })
+    })()
+  }, [])
+
+  const openDesignerModal = useCallback(async () => {
+    const cal = await getCalApi({ namespace: 'designer' })
+    cal('modal', {
+      calLink: designCalLink,
+      config: {
+        name: userName,
+        email: userEmail,
+        theme: 'light',
+        layout: 'month_view',
+      },
+    })
+  }, [designCalLink, userName, userEmail])
 
   return (
     <div className='relative overflow-hidden rounded-2xl border border-[#e8e4df]/60'>
@@ -1394,15 +1431,13 @@ const DesignBanner = ({ projectId }: { projectId: string }) => {
             >
               En savoir plus
             </Link>
-            <a
-              href={`https://cal.com/${process.env.NEXT_PUBLIC_CALCOM_DESIGNER_LINK || 'expert-reno/designer-consultation'}`}
-              target='_blank'
-              rel='noopener noreferrer'
+            <button
+              onClick={openDesignerModal}
               className='inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 active:scale-[0.98] bg-gradient-to-r from-[#c9a96e] to-[#b8944f] text-white shadow-[0_2px_12px_rgba(201,169,110,0.25)] hover:shadow-[0_4px_20px_rgba(201,169,110,0.35)] hover:brightness-110 px-5 py-2.5 text-sm'
             >
               <Phone className='size-4' />
               Réserver un appel gratuit
-            </a>
+            </button>
           </div>
         </div>
       </div>
