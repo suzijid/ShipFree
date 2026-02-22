@@ -49,7 +49,6 @@ export default async function RootLayout({ children, params }: Props) {
   return (
     <html lang={locale}>
       <head>
-        <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="theme-color" content="#b8960c" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
