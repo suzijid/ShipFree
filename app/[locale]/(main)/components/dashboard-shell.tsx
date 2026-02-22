@@ -25,9 +25,7 @@ import {
 } from 'lucide-react'
 
 import { signOut } from '@/lib/auth/auth-client'
-import { useOptionalProject } from './project-context'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { PROJECT_PHASE_LABELS, type ProjectPhase } from '@/config/project'
 import { Breadcrumbs } from './breadcrumbs'
 import { NotificationCenter } from './notification-center'
 
@@ -124,23 +122,13 @@ export const DashboardShell = ({ user, children }: DashboardShellProps) => {
 }
 
 // ─── Project Status Pill ─────────────────────────────────────────
+// Note: DashboardShell is above ProjectProvider in the tree, so we cannot
+// use useOptionalProject() here. Instead we accept phase as a prop or
+// render nothing. The pill is shown from within project pages if needed.
 
 const ProjectStatusPill = () => {
-  const projectCtx = useOptionalProject()
-
-  if (!projectCtx) return null
-
-  const phase = projectCtx.project.phase as ProjectPhase
-  const label = PROJECT_PHASE_LABELS[phase]
-
-  if (!label) return null
-
-  return (
-    <div className='hidden sm:flex items-center gap-1.5 border border-[#e0e0e0] px-3 py-2 text-[#767676]'>
-      <span className='size-1.5 rounded-full bg-[#202020]' />
-      <span className='text-xs text-[#202020]'>Phase : {label}</span>
-    </div>
-  )
+  // Cannot access ProjectContext from DashboardShell level
+  return null
 }
 
 // ─── Desktop sidebar ────────────────────────────────────────────
@@ -156,7 +144,6 @@ const DesktopSidebar = ({
 }) => {
   const pathname = usePathname()
   const router = useRouter()
-  const projectCtx = useOptionalProject()
 
   const getInitials = (name: string) =>
     name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -207,7 +194,7 @@ const DesktopSidebar = ({
       )}
 
       <nav className='flex flex-col gap-1 flex-1'>
-        {isProjectPage && projectCtx ? (
+        {isProjectPage ? (
           <>
             <NavItem href={`/dashboard/projects/${activeProjectId}/overview`} icon={LayoutDashboard} label='Vue d&apos;ensemble' pathname={pathname} collapsed={collapsed} tourId='overview-nav' />
             <NavItem href={`/dashboard/projects/${activeProjectId}/messages`} icon={MessageSquare} label='Messages' pathname={pathname} collapsed={collapsed} tourId='messages-nav' />
@@ -313,7 +300,6 @@ const MobileSidebarContent = ({
 }) => {
   const pathname = usePathname()
   const router = useRouter()
-  const projectCtx = useOptionalProject()
 
   const getInitials = (name: string) =>
     name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -330,7 +316,7 @@ const MobileSidebarContent = ({
   return (
     <>
       <nav className='flex-1 p-3 space-y-1 overflow-y-auto'>
-        {isProjectPage && projectCtx ? (
+        {isProjectPage ? (
           <>
             <MobileNavItem href={`/dashboard/projects/${activeProjectId}/overview`} icon={LayoutDashboard} label='Vue d&apos;ensemble' pathname={pathname} onNavigate={onNavigate} />
             <MobileNavItem href={`/dashboard/projects/${activeProjectId}/messages`} icon={MessageSquare} label='Messages' pathname={pathname} onNavigate={onNavigate} />
