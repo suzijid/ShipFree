@@ -18,6 +18,10 @@ import {
   X,
   ChevronsLeft,
   ChevronsRight,
+  PenTool,
+  HardHat,
+  Settings,
+  Bell,
 } from 'lucide-react'
 
 import { signOut } from '@/lib/auth/auth-client'
@@ -211,7 +215,10 @@ const DesktopSidebar = ({
             <NavItem href={`/dashboard/projects/${activeProjectId}/finances`} icon={Wallet} label='Finances' pathname={pathname} collapsed={collapsed} tourId='finances-nav' />
             <NavItem href={`/dashboard/projects/${activeProjectId}/artisans`} icon={Wrench} label='Artisans' pathname={pathname} collapsed={collapsed} tourId='artisans-nav' />
             <NavItem href={`/dashboard/projects/${activeProjectId}/design-services`} icon={Sparkles} label='Design' pathname={pathname} collapsed={collapsed} tourId='design-nav' />
+            <NavItem href={`/dashboard/projects/${activeProjectId}/conception`} icon={PenTool} label='Conception' pathname={pathname} collapsed={collapsed} />
+            <NavItem href={`/dashboard/projects/${activeProjectId}/travaux`} icon={HardHat} label='Travaux' pathname={pathname} collapsed={collapsed} />
             <div className='my-2 w-full border-t border-[#e0e0e0]' />
+            <NavItem href='/dashboard/settings/notifications' icon={Bell} label='Notifications' pathname={pathname} collapsed={collapsed} />
             <NavItem href='/dashboard' icon={ArrowLeft} label='Retour aux projets' pathname='' collapsed={collapsed} />
           </>
         ) : (
@@ -331,7 +338,10 @@ const MobileSidebarContent = ({
             <MobileNavItem href={`/dashboard/projects/${activeProjectId}/finances`} icon={Wallet} label='Finances' pathname={pathname} onNavigate={onNavigate} />
             <MobileNavItem href={`/dashboard/projects/${activeProjectId}/artisans`} icon={Wrench} label='Artisans' pathname={pathname} onNavigate={onNavigate} />
             <MobileNavItem href={`/dashboard/projects/${activeProjectId}/design-services`} icon={Sparkles} label='Design' pathname={pathname} onNavigate={onNavigate} />
+            <MobileNavItem href={`/dashboard/projects/${activeProjectId}/conception`} icon={PenTool} label='Conception' pathname={pathname} onNavigate={onNavigate} />
+            <MobileNavItem href={`/dashboard/projects/${activeProjectId}/travaux`} icon={HardHat} label='Travaux' pathname={pathname} onNavigate={onNavigate} />
             <div className='my-2 border-t border-[#e0e0e0]' />
+            <MobileNavItem href='/dashboard/settings/notifications' icon={Bell} label='Notifications' pathname={pathname} onNavigate={onNavigate} />
             <MobileNavItem href='/dashboard' icon={ArrowLeft} label='Retour aux projets' pathname='' onNavigate={onNavigate} />
           </>
         ) : (

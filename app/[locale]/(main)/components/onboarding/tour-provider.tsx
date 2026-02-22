@@ -26,7 +26,7 @@ export const TourProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [])
 
-  // Find and measure target element
+  // Find and measure target element — auto-skip if target not found
   useEffect(() => {
     if (!isActive || !currentStep || isModal) {
       setTargetRect(null)
@@ -40,12 +40,26 @@ export const TourProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setTargetRect(null)
       }
+      return !!el
     }
 
-    findTarget()
+    const found = findTarget()
+    if (!found) {
+      // Target element doesn't exist in DOM — auto-advance to next step
+      const skipTimer = setTimeout(() => {
+        if (currentStepIndex < TOUR_STEPS.length - 1) {
+          setCurrentStepIndex((i) => i + 1)
+        } else {
+          setIsActive(false)
+          localStorage.setItem(TOUR_STORAGE_KEY, 'true')
+        }
+      }, 100)
+      return () => clearTimeout(skipTimer)
+    }
+
     window.addEventListener('resize', findTarget)
     return () => window.removeEventListener('resize', findTarget)
-  }, [isActive, currentStep, isModal])
+  }, [isActive, currentStep, isModal, currentStepIndex])
 
   const handleNext = useCallback(() => {
     if (currentStepIndex < TOUR_STEPS.length - 1) {

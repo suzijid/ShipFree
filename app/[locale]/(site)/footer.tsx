@@ -33,9 +33,9 @@ const Footer = () => {
           <div>
             <h4 className='text-sm font-semibold mb-4'>L&eacute;gal</h4>
             <ul className='space-y-2'>
-              <li><Link href='/mentions-legales' className='text-sm text-white/60 hover:text-white transition-colors'>Mentions l&eacute;gales</Link></li>
-              <li><Link href='/confidentialite' className='text-sm text-white/60 hover:text-white transition-colors'>Politique de confidentialit&eacute;</Link></li>
-              <li><Link href='/cgv' className='text-sm text-white/60 hover:text-white transition-colors'>CGV</Link></li>
+              <li><Link href='/terms' className='text-sm text-white/60 hover:text-white transition-colors'>Mentions l&eacute;gales</Link></li>
+              <li><Link href='/privacy' className='text-sm text-white/60 hover:text-white transition-colors'>Politique de confidentialit&eacute;</Link></li>
+              <li><Link href='/licenses' className='text-sm text-white/60 hover:text-white transition-colors'>CGV</Link></li>
             </ul>
           </div>
 
