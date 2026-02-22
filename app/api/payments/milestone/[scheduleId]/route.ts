@@ -7,6 +7,7 @@ import { getProjectAccess } from '@/lib/auth/project-access'
 import { db } from '@/database'
 import { paymentSchedule, contractor } from '@/database/schema'
 import { createMilestonePayment } from '@/lib/payments/stripe-connect'
+import { getProjectCommissionRate } from '@/config/payments'
 
 export const POST = async (
   _req: Request,
@@ -50,6 +51,8 @@ export const POST = async (
     return NextResponse.json({ error: 'Le compte Stripe de l\'artisan n\'est pas actif' }, { status: 400 })
   }
 
+  // Use per-project commission rate, falling back to global default
+  const commissionRate = getProjectCommissionRate(access.project.commissionRate)
   const amountInCents = Math.round(Number(schedule.amount) * 100)
 
   const result = await createMilestonePayment({
@@ -58,6 +61,7 @@ export const POST = async (
     projectId: schedule.projectId,
     scheduleId: schedule.id,
     customerEmail: session.user.email,
+    commissionRate,
   })
 
   return NextResponse.json({

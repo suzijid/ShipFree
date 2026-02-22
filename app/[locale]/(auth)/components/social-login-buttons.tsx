@@ -2,7 +2,6 @@
 
 import { type ReactNode, useEffect, useState } from 'react'
 import { GitHubIcon, GoogleIcon, MicrosoftIcon, FacebookIcon } from './icons'
-import { Button } from '@/components/ui/button'
 import { client } from '@/lib/auth/auth-client'
 
 interface SocialLoginButtonsProps {
@@ -129,56 +128,50 @@ export function SocialLoginButtons({
     }
   }
 
+  const btnClasses = 'flex items-center justify-center gap-2 border border-[#202020] rounded-none bg-transparent text-[#202020] uppercase tracking-[0.15em] text-[13px] font-normal h-12 w-full hover:bg-[#f5f5f5] transition-colors disabled:opacity-50 cursor-pointer'
+
   const githubButton = (
-    <Button
-      variant='outline'
-      size='lg'
-      className='w-full hover:bg-gray-50'
+    <button
+      className={btnClasses}
       disabled={!githubAvailable || isGithubLoading}
       onClick={signInWithGithub}
     >
-      <GitHubIcon className='h-[18px]! w-[18px]! mr-1' />
-      {isGithubLoading ? 'Connecting...' : 'GitHub'}
-    </Button>
+      <GitHubIcon className='h-[18px] w-[18px]' />
+      {isGithubLoading ? 'Connexion...' : 'GitHub'}
+    </button>
   )
 
   const googleButton = (
-    <Button
-      variant='outline'
-      size='lg'
-      className='w-full hover:bg-gray-50'
+    <button
+      className={btnClasses}
       disabled={!googleAvailable || isGoogleLoading}
       onClick={signInWithGoogle}
     >
-      <GoogleIcon className='h-[18px]! w-[18px]! mr-1' />
-      {isGoogleLoading ? 'Connecting...' : 'Google'}
-    </Button>
+      <GoogleIcon className='h-[18px] w-[18px]' />
+      {isGoogleLoading ? 'Connexion...' : 'Google'}
+    </button>
   )
 
   const microsoftButton = (
-    <Button
-      variant='outline'
-      size='lg'
-      className='w-full rounded-[10px] shadow-sm hover:bg-gray-50'
+    <button
+      className={btnClasses}
       disabled={!microsoftAvailable || isMicrosoftLoading}
       onClick={signInWithMicrosoft}
     >
-      <MicrosoftIcon className='h-[18px]! w-[18px]! mr-1' />
-      {isMicrosoftLoading ? 'Connecting...' : 'Microsoft'}
-    </Button>
+      <MicrosoftIcon className='h-[18px] w-[18px]' />
+      {isMicrosoftLoading ? 'Connexion...' : 'Microsoft'}
+    </button>
   )
 
   const facebookButton = (
-    <Button
-      variant='outline'
-      size='lg'
-      className='w-full  hover:bg-gray-50'
+    <button
+      className={btnClasses}
       disabled={!facebookAvailable || isFacebookLoading}
       onClick={signInWithFacebook}
     >
-      <FacebookIcon className='h-[18px]! w-[18px]! mr-1' />
-      {isFacebookLoading ? 'Connecting...' : 'Facebook'}
-    </Button>
+      <FacebookIcon className='h-[18px] w-[18px]' />
+      {isFacebookLoading ? 'Connexion...' : 'Facebook'}
+    </button>
   )
 
   const hasAnyOAuthProvider = githubAvailable || googleAvailable
@@ -188,7 +181,7 @@ export function SocialLoginButtons({
   }
 
   return (
-    <div className={`grid gap-3 font-light`}>
+    <div className='grid gap-3'>
       {googleAvailable && googleButton}
       {githubAvailable && githubButton}
       {microsoftAvailable && microsoftButton}

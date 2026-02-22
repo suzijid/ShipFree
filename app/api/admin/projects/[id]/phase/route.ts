@@ -5,7 +5,9 @@ import { z } from 'zod'
 import { requireAdminApi } from '@/lib/auth/require-admin'
 import { db } from '@/database'
 import { project, projectEvent } from '@/database/schema'
-import { PROJECT_PHASES } from '@/config/project'
+import { PROJECT_PHASES, PROJECT_PHASE_LABELS, type ProjectPhase } from '@/config/project'
+import { notificationService } from '@/lib/notifications/notification-service'
+import { renderPhaseChangedEmail, getEmailSubject } from '@/components/emails'
 
 const phaseSchema = z.object({
   phase: z.enum(PROJECT_PHASES),
@@ -30,7 +32,17 @@ export async function PATCH(
     return NextResponse.json({ error: 'Projet non trouvé' }, { status: 404 })
   }
 
-  await db.update(project).set({ phase: parsed.data.phase }).where(eq(project.id, id))
+  // Build update payload
+  const updatePayload: Record<string, unknown> = { phase: parsed.data.phase }
+
+  // When moving to 'termine', set warranty expiry to 1 year from now
+  if (parsed.data.phase === 'termine' && p.phase !== 'termine') {
+    const warrantyDate = new Date()
+    warrantyDate.setFullYear(warrantyDate.getFullYear() + 1)
+    updatePayload.warrantyExpiresAt = warrantyDate
+  }
+
+  await db.update(project).set(updatePayload).where(eq(project.id, id))
 
   await db.insert(projectEvent).values({
     id: crypto.randomUUID(),
@@ -38,6 +50,40 @@ export async function PATCH(
     type: 'phase_change',
     data: { from: p.phase, to: parsed.data.phase, changedBy: session.user.id },
   })
+
+  // ── Notification trigger ─────────────────────────────────────────
+  try {
+    const phaseName = PROJECT_PHASE_LABELS[parsed.data.phase as ProjectPhase] || parsed.data.phase
+    const link = `/dashboard/projects/${id}/overview`
+
+    await notificationService.createForProject({
+      projectId: id,
+      type: 'phase_changed',
+      title: `Phase mise à jour : ${phaseName}`,
+      body: `Le projet ${p.title} passe en phase ${phaseName}`,
+      link,
+    })
+
+    // Send email to project owner and manager
+    const memberIds = new Set<string>()
+    memberIds.add(p.userId)
+    if (p.managerId) memberIds.add(p.managerId)
+
+    const html = await renderPhaseChangedEmail({
+      projectTitle: p.title,
+      phaseName,
+      projectLink: link,
+    })
+
+    for (const memberId of memberIds) {
+      notificationService.sendEmail(memberId, 'phase_changed', {
+        subject: getEmailSubject('phase-changed'),
+        html,
+      }).catch(() => {})
+    }
+  } catch (err) {
+    console.error('[notifications] Failed to send phase_changed notification:', err)
+  }
 
   return NextResponse.json({ success: true })
 }

@@ -23,6 +23,8 @@ export default async function DocumentsPage({
       mimeType: document.mimeType,
       size: document.size,
       category: document.category,
+      version: document.version,
+      parentDocumentId: document.parentDocumentId,
       createdAt: document.createdAt,
       uploadedByName: user.name,
     })

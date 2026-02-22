@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { eq, and, desc } from 'drizzle-orm'
 
 import { auth } from '@/lib/auth/auth'
 import { db } from '@/database'
@@ -7,7 +8,8 @@ import { document, user } from '@/database/schema'
 import { getProjectAccess } from '@/lib/auth/project-access'
 import { storage } from '@/lib/storage'
 import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE, FILE_CATEGORIES } from '@/config/project'
-import { eq } from 'drizzle-orm'
+import { notificationService } from '@/lib/notifications/notification-service'
+import { renderDocumentUploadedEmail, getEmailSubject } from '@/components/emails'
 
 export async function POST(
   req: Request,
@@ -50,6 +52,30 @@ export async function POST(
     )
   }
 
+  // Check for existing document with the same name and category for versioning
+  const existingDocs = await db
+    .select()
+    .from(document)
+    .where(
+      and(
+        eq(document.projectId, id),
+        eq(document.name, file.name),
+        eq(document.category, category)
+      )
+    )
+    .orderBy(desc(document.version))
+    .limit(1)
+
+  let version = 1
+  let parentDocumentId: string | null = null
+
+  if (existingDocs.length > 0) {
+    const existing = existingDocs[0]
+    // The parent is the original document (first version)
+    parentDocumentId = existing.parentDocumentId || existing.id
+    version = (existing.version ?? 1) + 1
+  }
+
   const docId = crypto.randomUUID()
   const key = `projects/${id}/documents/${docId}-${file.name}`
 
@@ -70,6 +96,8 @@ export async function POST(
     mimeType: file.type,
     size: file.size,
     category,
+    version,
+    parentDocumentId,
   })
 
   // Fetch uploader name for client state update
@@ -79,6 +107,46 @@ export async function POST(
     .where(eq(user.id, session.user.id))
     .limit(1)
 
+  // ── Notification trigger ─────────────────────────────────────────
+  try {
+    const projectTitle = access.project.title || 'votre projet'
+    const uploaderName = uploader?.name ?? session.user.name
+    const link = `/dashboard/projects/${id}/documents`
+
+    await notificationService.createForProject({
+      projectId: id,
+      type: 'document_uploaded',
+      title: `Nouveau document : ${file.name}`,
+      body: `${uploaderName} a ajouté un document dans ${projectTitle}`,
+      link,
+      excludeUserId: session.user.id,
+    })
+
+    // Send email to project members
+    const html = await renderDocumentUploadedEmail({
+      projectTitle,
+      documentName: file.name,
+      uploaderName,
+      projectLink: link,
+    })
+
+    // Get project members for email
+    const { project: proj } = access
+    const memberIds = new Set<string>()
+    memberIds.add(proj.userId)
+    if (proj.managerId) memberIds.add(proj.managerId)
+    memberIds.delete(session.user.id)
+
+    for (const memberId of memberIds) {
+      notificationService.sendEmail(memberId, 'document_uploaded', {
+        subject: getEmailSubject('document-uploaded'),
+        html,
+      }).catch(() => {})
+    }
+  } catch (err) {
+    console.error('[notifications] Failed to send document_uploaded notification:', err)
+  }
+
   return NextResponse.json({
     id: docId,
     name: file.name,
@@ -86,6 +154,8 @@ export async function POST(
     mimeType: file.type,
     size: file.size,
     category,
+    version,
+    parentDocumentId,
     createdAt: new Date(),
     uploadedByName: uploader?.name ?? session.user.name,
   })

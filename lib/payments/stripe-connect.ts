@@ -50,15 +50,18 @@ export const createMilestonePayment = async ({
   projectId,
   scheduleId,
   customerEmail,
+  commissionRate,
 }: {
   amount: number // in cents
   contractorConnectAccountId: string
   projectId: string
   scheduleId: string
   customerEmail: string
+  commissionRate?: number // per-project override; falls back to global default
 }) => {
   const stripe = getStripe()
-  const commissionAmount = Math.round(amount * MARKETPLACE_CONFIG.commissionRate)
+  const effectiveRate = commissionRate ?? MARKETPLACE_CONFIG.commissionRate
+  const commissionAmount = Math.round(amount * effectiveRate)
   const contractorAmount = amount - commissionAmount
 
   const paymentIntent = await stripe.paymentIntents.create({

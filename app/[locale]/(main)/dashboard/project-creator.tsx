@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from '@/i18n/navigation'
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 export const ProjectCreator = () => {
   const router = useRouter()
@@ -60,42 +59,37 @@ export const ProjectCreator = () => {
   }
 
   const handleDismiss = () => {
-    // Don't remove localStorage — preserve questionnaire data for retry on next visit
     setError(null)
     setIsCreating(false)
   }
 
   if (error) {
     return (
-      <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
-        <div className='flex flex-col items-center gap-4 rounded-2xl border border-red-200 bg-white p-8 shadow-xl max-w-md'>
+      <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+        <div className='flex flex-col items-center gap-4 border border-red-200 bg-white p-8 max-w-md'>
           <AlertCircle className='size-8 text-red-500' />
           <div className='text-center'>
-            <p
-              className='font-semibold text-[#1a1a2e]'
-              style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
-            >
+            <p className='uppercase tracking-[0.15em] text-[13px] font-normal text-[#202020]'>
               Erreur de création
             </p>
-            <p className='text-sm text-[#9b9b9b] mt-1'>
+            <p className='text-sm text-[#999] mt-1'>
               {error}
             </p>
           </div>
           <div className='flex gap-3'>
-            <Button
-              variant='outline'
+            <button
               onClick={handleDismiss}
-              className='border-[#e8e4df] text-[#6b6b6b] hover:bg-[#f5f3f0]'
+              className='border border-[#e0e0e0] px-4 py-2 text-[13px] text-[#666] hover:bg-[#f5f5f5] uppercase tracking-[0.1em] transition-colors'
             >
               Ignorer
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleRetry}
-              className='bg-[#c9a96e] text-white hover:bg-[#b8944f]'
+              className='bg-[#202020] text-white px-4 py-2 text-[13px] hover:bg-[#333] uppercase tracking-[0.1em] transition-colors flex items-center gap-2'
             >
-              <RefreshCw className='size-4 mr-2' />
+              <RefreshCw className='size-4' />
               Réessayer
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -105,17 +99,14 @@ export const ProjectCreator = () => {
   if (!isCreating) return null
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
-      <div className='flex flex-col items-center gap-4 rounded-2xl border border-[#e8e4df] bg-white p-8 shadow-xl'>
-        <Loader2 className='size-8 animate-spin text-[#c9a96e]' />
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+      <div className='flex flex-col items-center gap-4 border border-[#e0e0e0] bg-white p-8'>
+        <Loader2 className='size-8 animate-spin text-[#202020]' />
         <div className='text-center'>
-          <p
-            className='font-semibold text-[#1a1a2e]'
-            style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
-          >
+          <p className='uppercase tracking-[0.15em] text-[13px] font-normal text-[#202020]'>
             Création de votre projet...
           </p>
-          <p className='text-sm text-[#9b9b9b] mt-1'>
+          <p className='text-sm text-[#999] mt-1'>
             Nous préparons votre fiche projet
           </p>
         </div>

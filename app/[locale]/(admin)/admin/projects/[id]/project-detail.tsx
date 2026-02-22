@@ -25,7 +25,6 @@ interface ProjectDetailProps {
     phase: string
     city: string | null
     budgetRange: string | null
-    modules: { design: boolean; works: boolean; wallet: boolean }
     services: { architect: string; contractors: string; adminHelp: string }
     aiSummary: unknown
     surface: string | null

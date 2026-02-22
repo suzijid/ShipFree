@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, MapPin, Ruler, Palette, Wallet, HardHat, FileText } from 'lucide-react'
+import { User, MapPin, Ruler, FileText } from 'lucide-react'
 
 import { GlassCard, GlassButton, GlassBadge } from '@/app/[locale]/(main)/components/glass-primitives'
 import {
@@ -27,7 +27,6 @@ interface OverviewTabProps {
     phase: string
     city: string | null
     budgetRange: string | null
-    modules: { design: boolean; works: boolean; wallet: boolean }
     services: { architect: string; contractors: string; adminHelp: string }
     aiSummary: unknown
     surface: string | null
@@ -134,23 +133,7 @@ export const OverviewTab = ({ project, client, manager, managers }: OverviewTabP
               ))}
             </div>
           </div>
-          <div>
-            <p className='text-xs text-[#9b9b9b] mb-1.5'>Modules actifs</p>
-            <div className='flex gap-2'>
-              {project.modules.design && (
-                <GlassBadge variant='gold'><Palette className='size-3 mr-1' /> Conception</GlassBadge>
-              )}
-              {project.modules.works && (
-                <GlassBadge variant='gold'><HardHat className='size-3 mr-1' /> Travaux</GlassBadge>
-              )}
-              {project.modules.wallet && (
-                <GlassBadge variant='gold'><Wallet className='size-3 mr-1' /> Finances</GlassBadge>
-              )}
-              {!project.modules.design && !project.modules.works && !project.modules.wallet && (
-                <span className='text-xs text-[#9b9b9b] italic'>Aucun module activé</span>
-              )}
-            </div>
-          </div>
+
         </div>
       </GlassCard>
 

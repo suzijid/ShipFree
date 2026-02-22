@@ -10,9 +10,11 @@ import {
   VALIDATION_TEMPLATES,
   DEFAULT_CHANNELS,
   PROPERTY_TYPE_LABELS,
+  BUSINESS_TYPE_LABELS,
   type ProjectServices,
   type ProjectPhase,
   type PropertyType,
+  type BusinessType,
 } from '@/config/project'
 
 const RENOVATION_LABELS: Record<string, string> = {
@@ -48,6 +50,47 @@ const questionnaireSchema = z.object({
     architect: z.enum(['yes', 'no', 'maybe']).default('no'),
     contractors: z.enum(['yes', 'no', 'maybe']).default('no'),
     adminHelp: z.enum(['yes', 'no', 'maybe']).default('no'),
+  }).optional(),
+  // Dynamic questionnaire fields
+  businessType: z.string().optional(),
+  departement: z.string().optional(),
+  region: z.string().optional(),
+  maisonDetails: z.object({
+    floors: z.number().optional(),
+    exterior: z.array(z.string()).optional(),
+    roofWork: z.boolean().optional(),
+    facadeWork: z.boolean().optional(),
+  }).optional(),
+  appartementDetails: z.object({
+    floor: z.number().optional(),
+    elevator: z.boolean().optional(),
+    parking: z.boolean().optional(),
+    cave: z.boolean().optional(),
+  }).optional(),
+  extensionDetails: z.object({
+    type: z.string().optional(),
+    surfaceWanted: z.string().optional(),
+    pluChecked: z.boolean().optional(),
+    permisNeeded: z.boolean().optional(),
+  }).optional(),
+  renoCompleteDetails: z.object({
+    currentState: z.string().optional(),
+    diagnostics: z.array(z.string()).optional(),
+    occupiedDuringWorks: z.boolean().optional(),
+  }).optional(),
+  tenantDetails: z.object({
+    ownerApproval: z.enum(['yes', 'no', 'in_progress']).optional(),
+    reversibleOnly: z.boolean().optional(),
+  }).optional(),
+  buyingDetails: z.object({
+    expectedSignDate: z.string().optional(),
+    renoConditional: z.boolean().optional(),
+  }).optional(),
+  guidedDescription: z.object({
+    currentState: z.string().optional(),
+    desiredChanges: z.string().optional(),
+    expectedResult: z.string().optional(),
+    additionalInfo: z.string().optional(),
   }).optional(),
 })
 
@@ -93,7 +136,9 @@ export async function POST(req: Request) {
     // Auto-generate title from questionnaire
     const propertyLabel = PROPERTY_TYPE_LABELS[input.propertyType as PropertyType] || input.propertyType
     const renovationLabel = RENOVATION_LABELS[input.renovationType] || input.renovationType
-    const title = `${renovationLabel} — ${propertyLabel} à ${input.city}`
+    const businessLabel = input.businessType ? BUSINESS_TYPE_LABELS[input.businessType as BusinessType] : null
+    const titleProperty = businessLabel ? `${propertyLabel} (${businessLabel})` : propertyLabel
+    const title = `${renovationLabel} — ${titleProperty} à ${input.city}`
 
     // Determine which phases are relevant based on services
     const activePhases: ProjectPhase[] = ['cadrage']
@@ -110,11 +155,6 @@ export async function POST(req: Request) {
       title,
       status: 'draft',
       phase: 'cadrage',
-      modules: {
-        design: services.architect === 'yes' || services.architect === 'maybe',
-        works: services.contractors === 'yes' || services.contractors === 'maybe',
-        wallet: services.adminHelp === 'yes' || services.adminHelp === 'maybe',
-      },
       services,
       aiSummary: {
         propertyType: input.propertyType,
@@ -133,6 +173,16 @@ export async function POST(req: Request) {
         topPriority: input.topPriority,
         postalCode: input.postalCode,
         city: input.city,
+        ...(input.businessType && { businessType: input.businessType }),
+        ...(input.departement && { departement: input.departement }),
+        ...(input.region && { region: input.region }),
+        ...(input.maisonDetails && { maisonDetails: input.maisonDetails }),
+        ...(input.appartementDetails && { appartementDetails: input.appartementDetails }),
+        ...(input.extensionDetails && { extensionDetails: input.extensionDetails }),
+        ...(input.renoCompleteDetails && { renoCompleteDetails: input.renoCompleteDetails }),
+        ...(input.tenantDetails && { tenantDetails: input.tenantDetails }),
+        ...(input.buyingDetails && { buyingDetails: input.buyingDetails }),
+        ...(input.guidedDescription && { guidedDescription: input.guidedDescription }),
       },
       propertyType: input.propertyType,
       surface: input.surface || null,

@@ -3,7 +3,7 @@ import { eq, asc, desc } from 'drizzle-orm'
 
 import { auth } from '@/lib/auth/auth'
 import { db } from '@/database'
-import { projectAction, projectValidation, document, user, projectEvent, paymentSchedule, projectContractor, contractor, proposal, designServiceBooking } from '@/database/schema'
+import { project, projectAction, projectValidation, document, user, projectEvent, paymentSchedule, projectContractor, contractor, proposal, designServiceBooking } from '@/database/schema'
 import { OverviewContent } from './overview-content'
 
 export default async function OverviewPage({
@@ -15,7 +15,7 @@ export default async function OverviewPage({
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) return null
 
-  const [actions, validations, documents, events, payments, contractors, designBookings] = await Promise.all([
+  const [actions, validations, documents, events, payments, contractors, designBookings, projectRow] = await Promise.all([
     db
       .select()
       .from(projectAction)
@@ -77,12 +77,21 @@ export default async function OverviewPage({
       .select()
       .from(designServiceBooking)
       .where(eq(designServiceBooking.projectId, id)),
+    // Project-level fields (warranty)
+    db
+      .select({ warrantyExpiresAt: project.warrantyExpiresAt })
+      .from(project)
+      .where(eq(project.id, id))
+      .limit(1),
   ])
+
+  const warrantyExpiresAt = projectRow?.[0]?.warrantyExpiresAt ?? null
 
   return (
     <OverviewContent
       userName={session.user.name ?? ''}
       userEmail={session.user.email ?? ''}
+      warrantyExpiresAt={warrantyExpiresAt?.toISOString() ?? null}
       actions={actions.map((a) => ({
         id: a.id,
         label: a.label,

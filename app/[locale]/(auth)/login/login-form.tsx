@@ -1,11 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowRight, ChevronRight, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogDescription,
@@ -15,8 +14,6 @@ import {
   DialogPopup,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { client } from '@/lib/auth/auth-client'
 import { cn, getBaseUrl } from '@/lib/utils'
 import { quickValidateEmail } from '@/lib/messaging/email/validation'
@@ -104,14 +101,12 @@ export default function LoginPage({
   const [password, setPassword] = useState('')
   const [passwordErrors, setPasswordErrors] = useState<string[]>([])
   const [showValidationError, setShowValidationError] = useState(false)
-  const [isButtonHovered, setIsButtonHovered] = useState(false)
 
   const [callbackUrl, setCallbackUrl] = useState('/dashboard')
 
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false)
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('')
   const [isSubmittingReset, setIsSubmittingReset] = useState(false)
-  const [isResetButtonHovered, setIsResetButtonHovered] = useState(false)
   const [resetStatus, setResetStatus] = useState<{
     type: 'success' | 'error' | null
     message: string
@@ -349,58 +344,63 @@ export default function LoginPage({
   const hasSocial = githubAvailable || googleAvailable
   const showDivider = hasSocial
 
+  const inputClasses = 'border-0 border-b border-[#e0e0e0] rounded-none px-0 py-3 text-sm text-[#202020] bg-transparent focus:border-[#202020] focus:outline-none transition-colors w-full placeholder:text-[#ccc]'
+  const labelClasses = 'uppercase text-[11px] tracking-[0.15em] text-[#999] font-normal'
+
   return (
     <>
-      <div className='space-y-1 text-center'>
-        <h1 className='font-medium text-[32px] text-black tracking-tight'>Connexion</h1>
-        <p className='font-[380] text-[16px] text-muted-foreground'>Entrez vos identifiants</p>
+      <div className='text-center'>
+        <h1 className='uppercase tracking-[0.2em] text-[13px] font-normal text-[#202020]'>
+          Connexion
+        </h1>
       </div>
 
-      <form onSubmit={onSubmit} className={`mt-8 space-y-8`}>
+      <form onSubmit={onSubmit} className='mt-10 space-y-8'>
         <div className='space-y-6'>
-          <div className='space-y-2'>
-            <div className='flex items-center justify-between'>
-              <Label htmlFor='email'>Adresse email</Label>
-            </div>
-            <Input
+          <div className='space-y-1'>
+            <label htmlFor='email' className={labelClasses}>
+              Adresse email
+            </label>
+            <input
               id='email'
               name='email'
               placeholder='votre@email.fr'
               required
               autoCapitalize='none'
-              size={'lg'}
               autoComplete='email'
               autoCorrect='off'
               value={email}
               onChange={handleEmailChange}
               className={cn(
-                'transition-colors focus:border-gray-400 focus:ring-2 focus:ring-gray-100',
+                inputClasses,
                 showEmailValidationError &&
                   emailErrors.length > 0 &&
-                  'border-red-500 focus:border-red-500 focus:ring-red-100 focus-visible:ring-red-500'
+                  'border-red-500 focus:border-red-500'
               )}
             />
             {showEmailValidationError && emailErrors.length > 0 && (
-              <div className='mt-1 space-y-1 text-red-400 text-xs'>
+              <div className='mt-1 space-y-1 text-red-400 text-[11px]'>
                 {emailErrors.map((error, index) => (
                   <p key={index}>{error}</p>
                 ))}
               </div>
             )}
           </div>
-          <div className='space-y-2'>
+          <div className='space-y-1'>
             <div className='flex items-center justify-between'>
-              <Label htmlFor='password'>Mot de passe</Label>
+              <label htmlFor='password' className={labelClasses}>
+                Mot de passe
+              </label>
               <button
                 type='button'
                 onClick={() => setForgotPasswordOpen(true)}
-                className='font-medium text-muted-foreground text-xs transition hover:text-foreground'
+                className='uppercase text-[11px] tracking-[0.1em] text-[#999] hover:text-[#202020] transition-colors'
               >
-                Mot de passe oublié ?
+                Mot de passe oubli&eacute; ?
               </button>
             </div>
             <div className='relative'>
-              <Input
+              <input
                 id='password'
                 name='password'
                 required
@@ -410,26 +410,26 @@ export default function LoginPage({
                 autoCorrect='off'
                 placeholder='Votre mot de passe'
                 value={password}
-                size={'lg'}
                 onChange={handlePasswordChange}
                 className={cn(
-                  'pr-10 transition-colors focus:border-gray-400 focus:ring-2 focus:ring-gray-100',
+                  inputClasses,
+                  'pr-10',
                   showValidationError &&
                     passwordErrors.length > 0 &&
-                    'border-red-500 focus:border-red-500 focus:ring-red-100 focus-visible:ring-red-500'
+                    'border-red-500 focus:border-red-500'
                 )}
               />
               <button
                 type='button'
                 onClick={() => setShowPassword(!showPassword)}
-                className='-translate-y-1/2 absolute top-1/2 right-3 text-gray-500 transition hover:text-gray-700'
+                className='-translate-y-1/2 absolute top-1/2 right-0 text-[#999] transition hover:text-[#202020]'
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
             {showValidationError && passwordErrors.length > 0 && (
-              <div className='mt-1 space-y-1 text-red-400 text-xs'>
+              <div className='mt-1 space-y-1 text-red-400 text-[11px]'>
                 {passwordErrors.map((error, index) => (
                   <p key={index}>{error}</p>
                 ))}
@@ -438,35 +438,22 @@ export default function LoginPage({
           </div>
         </div>
 
-        <Button
+        <button
           type='submit'
-          size='lg'
-          onMouseEnter={() => setIsButtonHovered(true)}
-          onMouseLeave={() => setIsButtonHovered(false)}
-          className='group inline-flex w-full items-center justify-center gap-2 rounded-[10px] py-[6px] pr-[10px] pl-[12px] text-[15px] text-white shadow-[inset_0_2px_4px_0_#9B77FF] transition-all'
+          className='bg-[#202020] text-white rounded-none uppercase tracking-[0.15em] text-[13px] font-normal h-12 w-full hover:bg-[#333] transition-colors disabled:opacity-50'
           disabled={isLoading}
         >
-          <span className='flex items-center gap-1'>
-            {isLoading ? 'Connexion...' : 'Se connecter'}
-            <span className='inline-flex transition-transform duration-200 group-hover:translate-x-0.5'>
-              {isButtonHovered ? (
-                <ArrowRight className='h-4 w-4' aria-hidden='true' />
-              ) : (
-                <ChevronRight className='h-4 w-4' aria-hidden='true' />
-              )}
-            </span>
-          </span>
-        </Button>
+          {isLoading ? 'Connexion...' : 'Se connecter'}
+        </button>
       </form>
 
-      {/* Divider - show when we have multiple auth methods */}
       {showDivider && (
-        <div className='relative my-6 font-light'>
+        <div className='relative my-8'>
           <div className='absolute inset-0 flex items-center'>
-            <div className='w-full border-t border-gray-200' />
+            <div className='w-full border-t border-[#e0e0e0]' />
           </div>
-          <div className='relative flex justify-center text-sm'>
-            <span className='bg-white px-4 font-[340] text-muted-foreground'>Ou continuer avec</span>
+          <div className='relative flex justify-center'>
+            <span className='bg-white px-4 text-[12px] text-[#999]'>ou</span>
           </div>
         </div>
       )}
@@ -484,23 +471,23 @@ export default function LoginPage({
         </div>
       )}
 
-      <div className='pt-6 text-center text-[14px] font-light'>
-        <span className='font-normal'>Pas encore de compte ? </span>
+      <div className='pt-8 text-center'>
+        <span className='text-[13px] text-[#999]'>Pas encore de compte ?{' '}</span>
         <Link
           href={`/register?callbackUrl=${callbackUrl}`}
-          className='font-medium text-(--brand-accent-hex) underline-offset-4 transition hover:text-(--brand-accent-hover-hex) hover:underline'
+          className='text-[13px] text-[#202020] underline underline-offset-4 hover:text-[#000] transition-colors'
         >
-          Créer un compte
+          Cr&eacute;er un compte
         </Link>
       </div>
 
-      <div className='absolute inset-x-0 bottom-0 px-8 pb-8 text-center text-[13px] font-[340] leading-relaxed text-muted-foreground sm:px-8 md:px-[44px]'>
+      <div className='mt-8 text-center text-[11px] leading-relaxed text-[#999]'>
         En vous connectant, vous acceptez nos{' '}
         <Link
           href='/terms'
           target='_blank'
           rel='noopener noreferrer'
-          className='text-(--brand-accent-hex) underline-offset-4 transition hover:text-(--brand-accent-hover-hex) hover:underline'
+          className='underline underline-offset-2 hover:text-[#202020] transition-colors'
         >
           Conditions d&apos;utilisation
         </Link>{' '}
@@ -509,72 +496,60 @@ export default function LoginPage({
           href='/privacy'
           target='_blank'
           rel='noopener noreferrer'
-          className='text-(--brand-accent-hex) underline-offset-4 transition hover:text-(--brand-accent-hover-hex) hover:underline'
+          className='underline underline-offset-2 hover:text-[#202020] transition-colors'
         >
-          Politique de confidentialité
+          Politique de confidentialit&eacute;
         </Link>
       </div>
 
       <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
         <DialogPopup>
           <DialogHeader>
-            <DialogTitle className='text-xl font-semibold tracking-tight text-black'>
-              Réinitialiser le mot de passe
+            <DialogTitle className='uppercase tracking-[0.2em] text-[13px] font-normal text-[#202020]'>
+              Mot de passe oubli&eacute;
             </DialogTitle>
-            <DialogDescription className='text-sm text-muted-foreground'>
-              Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+            <DialogDescription className='text-[12px] text-[#999] mt-2'>
+              Entrez votre adresse email et nous vous enverrons un lien pour r&eacute;initialiser votre mot de passe.
             </DialogDescription>
           </DialogHeader>
           <DialogPanel className='space-y-4'>
-            <div className='space-y-2'>
-              <div className='flex items-center justify-between'>
-                <Label htmlFor='reset-email'>Adresse email</Label>
-              </div>
-              <Input
+            <div className='space-y-1'>
+              <label htmlFor='reset-email' className={labelClasses}>
+                Adresse email
+              </label>
+              <input
                 id='reset-email'
                 value={forgotPasswordEmail}
                 onChange={(event) => setForgotPasswordEmail(event.target.value)}
                 placeholder='votre@email.fr'
-                size={'lg'}
                 type='email'
                 className={cn(
-                  'transition-colors focus:border-gray-400 focus:ring-2 focus:ring-gray-100',
+                  inputClasses,
                   resetStatus.type === 'error' &&
-                    'border-red-500 focus:border-red-500 focus:ring-red-100 focus-visible:ring-red-500'
+                    'border-red-500 focus:border-red-500'
                 )}
               />
               {resetStatus.type === 'error' && (
-                <div className='mt-1 space-y-1 text-xs text-red-400'>
+                <div className='mt-1 space-y-1 text-[11px] text-red-400'>
                   <p>{resetStatus.message}</p>
                 </div>
               )}
             </div>
             {resetStatus.type === 'success' && (
-              <div className='mt-1 space-y-1 text-xs text-[#4CAF50]'>
+              <div className='mt-1 space-y-1 text-[11px] text-[#4CAF50]'>
                 <p>{resetStatus.message}</p>
               </div>
             )}
           </DialogPanel>
           <DialogFooter>
-            <Button
+            <button
               type='button'
               onClick={handleForgotPassword}
-              onMouseEnter={() => setIsResetButtonHovered(true)}
-              onMouseLeave={() => setIsResetButtonHovered(false)}
-              className='group inline-flex items-center justify-center gap-2 rounded-[10px] border border-blue-400 bg-blue-400 px-4 py-2 text-[15px] text-white shadow-[inset_0_2px_4px_0_#9B77FF] transition-all'
+              className='bg-[#202020] text-white rounded-none uppercase tracking-[0.15em] text-[13px] font-normal h-12 w-full hover:bg-[#333] transition-colors disabled:opacity-50'
               disabled={isSubmittingReset}
             >
-              <span className='flex items-center gap-1'>
-                {isSubmittingReset ? 'Envoi...' : 'Envoyer le lien'}
-                <span className='inline-flex transition-transform duration-200 group-hover:translate-x-0.5'>
-                  {isResetButtonHovered ? (
-                    <ArrowRight className='h-4 w-4' aria-hidden='true' />
-                  ) : (
-                    <ChevronRight className='h-4 w-4' aria-hidden='true' />
-                  )}
-                </span>
-              </span>
-            </Button>
+              {isSubmittingReset ? 'Envoi...' : 'Envoyer le lien'}
+            </button>
           </DialogFooter>
         </DialogPopup>
       </Dialog>

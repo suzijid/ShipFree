@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 
 import { env } from '@/config/env'
 import { db } from '@/database'
-import { contractor, paymentSchedule, projectEvent } from '@/database/schema'
+import { contractor, paymentSchedule, projectEvent, designServiceBooking, project } from '@/database/schema'
 
 export const POST = async (req: Request) => {
   if (!env.STRIPE_SECRET_KEY) {
@@ -84,6 +84,62 @@ export const POST = async (req: Request) => {
           type: 'payment',
           data: { scheduleId, amount: pi.amount / 100, status: 'failed' },
         })
+      }
+      break
+    }
+
+    case 'checkout.session.completed': {
+      const session = event.data.object as Stripe.Checkout.Session
+      const metadata = session.metadata || {}
+      const paymentType = metadata.type
+
+      // Handle design service payment confirmation
+      if (paymentType === 'design-service') {
+        const bookingId = metadata.bookingId
+        const projectId = metadata.projectId
+
+        if (bookingId) {
+          // Update the design service booking to 'scheduled' (paid & ready)
+          await db
+            .update(designServiceBooking)
+            .set({
+              status: 'scheduled',
+              stripePaymentId: session.payment_intent as string,
+            })
+            .where(eq(designServiceBooking.id, bookingId))
+        }
+
+        if (projectId) {
+          // Activate the design module on the project
+          const [p] = await db
+            .select({ modules: project.modules })
+            .from(project)
+            .where(eq(project.id, projectId))
+            .limit(1)
+
+          if (p) {
+            const currentModules = p.modules as { design: boolean; works: boolean; wallet: boolean }
+            await db
+              .update(project)
+              .set({
+                modules: { ...currentModules, design: true },
+              })
+              .where(eq(project.id, projectId))
+          }
+
+          // Log the event
+          await db.insert(projectEvent).values({
+            id: crypto.randomUUID(),
+            projectId,
+            type: 'module_activated',
+            data: {
+              module: 'design',
+              bookingId,
+              amount: (session.amount_total ?? 0) / 100,
+              trigger: 'design_service_payment',
+            },
+          })
+        }
       }
       break
     }

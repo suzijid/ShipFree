@@ -58,20 +58,6 @@ export const PROJECT_PHASE_DESCRIPTIONS: Record<ProjectPhase, string> = {
   termine: 'Projet terminé et archivé',
 }
 
-// ─── Project Modules (dashboard tabs) ───────────────────────────────────────
-
-export interface ProjectModules {
-  design: boolean
-  works: boolean
-  wallet: boolean
-}
-
-export const DEFAULT_PROJECT_MODULES: ProjectModules = {
-  design: false,
-  works: false,
-  wallet: false,
-}
-
 // ─── Services (chosen during questionnaire) ─────────────────────────────────
 
 export type ServiceChoice = 'yes' | 'no' | 'maybe'
@@ -294,6 +280,50 @@ export const DESIGN_SERVICE_TYPE_LABELS: Record<DesignServiceType, string> = {
   full_package: 'Pack complet',
 }
 
+// ─── Design Booking Workflow Statuses ─────────────────────────────────────────
+
+export const DESIGN_BOOKING_WORKFLOW_STEPS = [
+  'booking',
+  'assignation_designer',
+  'brief',
+  'esquisse',
+  'revisions',
+  'livraison',
+] as const
+
+export type DesignBookingWorkflowStep = (typeof DESIGN_BOOKING_WORKFLOW_STEPS)[number]
+
+export const DESIGN_BOOKING_WORKFLOW_LABELS: Record<DesignBookingWorkflowStep, string> = {
+  booking: 'R\u00e9servation',
+  assignation_designer: 'Assignation designer',
+  brief: 'Brief cr\u00e9atif',
+  esquisse: 'Esquisse',
+  revisions: 'R\u00e9visions',
+  livraison: 'Livraison',
+}
+
+export const DESIGN_BOOKING_WORKFLOW_DESCRIPTIONS: Record<DesignBookingWorkflowStep, string> = {
+  booking: 'Votre r\u00e9servation a \u00e9t\u00e9 confirm\u00e9e',
+  assignation_designer: 'Un designer est assign\u00e9 \u00e0 votre projet',
+  brief: 'D\u00e9finition du cahier des charges cr\u00e9atif',
+  esquisse: 'Premi\u00e8res propositions de design',
+  revisions: 'Ajustements et modifications',
+  livraison: 'Livraison des fichiers finaux',
+}
+
+/** Maps the DB status values to the workflow step for display purposes */
+export const STATUS_TO_WORKFLOW_STEP: Record<string, DesignBookingWorkflowStep> = {
+  pending: 'booking',
+  scheduled: 'booking',
+  assignation_designer: 'assignation_designer',
+  brief: 'brief',
+  esquisse: 'esquisse',
+  revisions: 'revisions',
+  in_progress: 'esquisse',
+  delivered: 'livraison',
+  livraison: 'livraison',
+}
+
 // ─── Property Types ─────────────────────────────────────────────────────────
 
 export const PROPERTY_TYPES = [
@@ -402,6 +432,123 @@ export const TOP_PRIORITY_LABELS: Record<TopPriority, string> = {
   price: 'Prix',
 }
 
+// ─── Business Types (local commercial) ──────────────────────────────────────
+
+export const BUSINESS_TYPES = [
+  'restaurant',
+  'boutique',
+  'bureau',
+  'cabinet_medical',
+  'salon_coiffure',
+  'autre',
+] as const
+
+export type BusinessType = (typeof BUSINESS_TYPES)[number]
+
+export const BUSINESS_TYPE_LABELS: Record<BusinessType, string> = {
+  restaurant: 'Restaurant / Bar',
+  boutique: 'Boutique / Commerce',
+  bureau: 'Bureau / Espace de travail',
+  cabinet_medical: 'Cabinet médical',
+  salon_coiffure: 'Salon de coiffure / Beauté',
+  autre: 'Autre activité',
+}
+
+// ─── Commercial Rooms ────────────────────────────────────────────────────────
+
+export const COMMERCIAL_ROOMS = [
+  { id: 'espace_vente', label: 'Espace de vente' },
+  { id: 'bureau', label: 'Bureau' },
+  { id: 'reserve', label: 'Réserve / Stockage' },
+  { id: 'cuisine_pro', label: 'Cuisine professionnelle' },
+  { id: 'sanitaires', label: 'Sanitaires' },
+  { id: 'salle_attente', label: 'Salle d\'attente' },
+  { id: 'salle_reunion', label: 'Salle de réunion' },
+  { id: 'vestiaire', label: 'Vestiaire' },
+] as const
+
+// ─── Commercial Constraints ──────────────────────────────────────────────────
+
+export const COMMERCIAL_CONSTRAINTS = [
+  { id: 'erp', label: 'Normes ERP (accès public)' },
+  { id: 'extraction_ventilation', label: 'Extraction / Ventilation' },
+  { id: 'securite_incendie', label: 'Sécurité incendie' },
+  { id: 'enseigne_vitrine', label: 'Enseigne / Vitrine' },
+  { id: 'nuisances_sonores', label: 'Nuisances sonores' },
+  { id: 'horaires_travaux', label: 'Horaires de travaux restreints' },
+] as const
+
+// ─── Commercial Styles ───────────────────────────────────────────────────────
+
+export const COMMERCIAL_STYLES = [
+  { id: 'professionnel', label: 'Professionnel / Corporate', icon: 'Building2' },
+  { id: 'chaleureux', label: 'Chaleureux / Accueillant', icon: 'Sparkles' },
+  { id: 'luxe', label: 'Luxe / Haut de gamme', icon: 'Award' },
+  { id: 'industriel_brut', label: 'Industriel / Brut', icon: 'Wrench' },
+  { id: 'nature_eco', label: 'Nature / Éco-responsable', icon: 'Leaf' },
+  { id: 'personnalise_marque', label: 'Personnalisé (identité marque)', icon: 'Palette' },
+] as const
+
+// ─── Maison Extra Rooms ──────────────────────────────────────────────────────
+
+export const MAISON_EXTRA_ROOMS = [
+  { id: 'sous_sol', label: 'Sous-sol / Cave' },
+  { id: 'grenier', label: 'Grenier / Combles' },
+] as const
+
+// ─── Maison Exterior Elements ────────────────────────────────────────────────
+
+export const MAISON_EXTERIOR_ELEMENTS = [
+  { id: 'jardin', label: 'Jardin' },
+  { id: 'piscine', label: 'Piscine' },
+  { id: 'terrasse_ext', label: 'Terrasse' },
+  { id: 'cloture', label: 'Clôture' },
+  { id: 'portail', label: 'Portail' },
+] as const
+
+// ─── Studio Rooms ────────────────────────────────────────────────────────────
+
+export const STUDIO_ROOMS = [
+  { id: 'piece_principale', label: 'Pièce principale' },
+  { id: 'coin_cuisine', label: 'Coin cuisine' },
+  { id: 'salle_de_bain', label: 'Salle de bain' },
+  { id: 'wc', label: 'WC' },
+] as const
+
+// ─── Extension Types ─────────────────────────────────────────────────────────
+
+export const EXTENSION_TYPES = [
+  'surelevation',
+  'veranda',
+  'annexe_sol',
+  'autre',
+] as const
+
+export type ExtensionType = (typeof EXTENSION_TYPES)[number]
+
+export const EXTENSION_TYPE_LABELS: Record<ExtensionType, string> = {
+  surelevation: 'Surélévation',
+  veranda: 'Véranda',
+  annexe_sol: 'Annexe au sol',
+  autre: 'Autre',
+}
+
+// ─── Current State Options ───────────────────────────────────────────────────
+
+export const CURRENT_STATE_OPTIONS = [
+  { id: 'jamais_renove', label: 'Jamais rénové' },
+  { id: 'renove_ancien', label: 'Rénové il y a plus de 15 ans' },
+  { id: 'recent', label: 'Rénové récemment' },
+] as const
+
+// ─── Diagnostic Options ──────────────────────────────────────────────────────
+
+export const DIAGNOSTIC_OPTIONS = [
+  { id: 'dpe', label: 'DPE (Diagnostic de Performance Énergétique)' },
+  { id: 'amiante', label: 'Diagnostic amiante' },
+  { id: 'plomb', label: 'Diagnostic plomb' },
+] as const
+
 // ─── AI Summary ─────────────────────────────────────────────────────────────
 
 /** Structured output from the AI questionnaire */
@@ -422,6 +569,47 @@ export interface AiProjectSummary {
   topPriority?: string
   postalCode?: string
   city?: string
+  // Dynamic questionnaire fields
+  businessType?: string
+  maisonDetails?: {
+    floors?: number
+    exterior?: string[]
+    roofWork?: boolean
+    facadeWork?: boolean
+  }
+  appartementDetails?: {
+    floor?: number
+    elevator?: boolean
+    parking?: boolean
+    cave?: boolean
+  }
+  extensionDetails?: {
+    type?: string
+    surfaceWanted?: string
+    pluChecked?: boolean
+    permisNeeded?: boolean
+  }
+  renoCompleteDetails?: {
+    currentState?: string
+    diagnostics?: string[]
+    occupiedDuringWorks?: boolean
+  }
+  tenantDetails?: {
+    ownerApproval?: 'yes' | 'no' | 'in_progress'
+    reversibleOnly?: boolean
+  }
+  buyingDetails?: {
+    expectedSignDate?: string
+    renoConditional?: boolean
+  }
+  guidedDescription?: {
+    currentState?: string
+    desiredChanges?: string
+    expectedResult?: string
+    additionalInfo?: string
+  }
+  departement?: string
+  region?: string
 }
 
 // ─── Payment Status (Stripe for MOE fee) ────────────────────────────────────
@@ -442,6 +630,7 @@ export const FILE_CATEGORIES = [
   'photos',
   'administratif',
   'conception',
+  'design_deliverable',
 ] as const
 
 export type FileCategory = (typeof FILE_CATEGORIES)[number]
@@ -452,6 +641,7 @@ export const FILE_CATEGORY_LABELS: Record<FileCategory, string> = {
   photos: 'Photos',
   administratif: 'Administratif',
   conception: 'Conception',
+  design_deliverable: 'Livrable design',
 }
 
 export const ALLOWED_FILE_TYPES = [
@@ -507,25 +697,22 @@ export const DEFAULT_CHANNELS = [
 
 export type ChannelName = (typeof DEFAULT_CHANNELS)[number]['name']
 
-// ─── Service Options (questionnaire → modules mapping) ────────────────────
+// ─── Service Options (questionnaire) ──────────────────────────────────────
 
 export const SERVICE_OPTIONS = [
   {
     key: 'architect' as const,
     label: 'Un architecte pour concevoir mon projet',
     description: 'Conception architecturale, esquisse, plans, suivi de conception',
-    module: 'design' as const,
   },
   {
     key: 'contractors' as const,
     label: 'Un gestionnaire pour coordonner les travaux',
     description: 'Mise en relation artisans, suivi de chantier',
-    module: 'works' as const,
   },
   {
     key: 'adminHelp' as const,
     label: 'Un suivi financier et des appels de fonds',
     description: 'Échéancier de paiement, appels de fonds, suivi budget',
-    module: 'wallet' as const,
   },
 ] as const

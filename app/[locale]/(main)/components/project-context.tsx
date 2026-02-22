@@ -1,14 +1,12 @@
 'use client'
 
 import { createContext, useContext } from 'react'
-import type { ProjectModules, ProjectPhase } from '@/config/project'
 
 export interface ProjectData {
   id: string
   title: string
   status: string
   phase: string
-  modules: ProjectModules
   services: { architect: string; contractors: string; adminHelp: string }
   aiSummary: Record<string, unknown> | null
   propertyType: string | null

@@ -14,7 +14,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <div className='dashboard-light bg-[#f2f0ed] min-h-svh'>
+    <div className='dashboard-light bg-white min-h-svh'>
       <DashboardShell user={{ name: session.user.name, email: session.user.email }}>
         <TourProvider>
           {children}

@@ -2,24 +2,18 @@
  * Polar Payment Adapter
  *
  * Implements the PaymentAdapter interface for Polar integration.
- * Handles checkout sessions, customers, subscriptions, and webhooks.
+ * Handles customers and webhooks for the Gradia marketplace model.
  */
 
 import { Polar } from '@polar-sh/sdk'
 import type {
   PaymentAdapter,
-  CheckoutOptions,
-  CheckoutResult,
-  ModuleCheckoutOptions,
   CustomerData,
-  SubscriptionData,
-  PortalResult,
   WebhookEvent,
   WebhookResult,
   WebhookEventType,
 } from '../types'
-import type { PaymentProvider, PlanName, GradiaModuleName } from '@/config/payments'
-import { getPriceConfig, paymentConfig, getModuleConfig } from '@/config/payments'
+import type { PaymentProvider } from '@/config/payments'
 import { env } from '@/config/env'
 
 export class PolarAdapter implements PaymentAdapter {
@@ -37,84 +31,8 @@ export class PolarAdapter implements PaymentAdapter {
     })
   }
 
-  async createCheckout(options: CheckoutOptions): Promise<CheckoutResult> {
-    const { plan, successUrl, cancelUrl, trialDays, userId, email } = options
-
-    // Get price configuration for this plan
-    const prices = getPriceConfig(plan, 'polar')
-    if (prices.length === 0) {
-      throw new Error(`No Polar prices configured for plan: ${plan}`)
-    }
-
-    // Use the first price (monthly)
-    const price = prices.find((p: any) => p.interval === 'month') || prices[0]
-
-    if (!price.productId) {
-      throw new Error(`No product ID configured for plan ${plan}`)
-    }
-
-    try {
-      const checkout = await this.polar.checkouts.create({
-        products: [price.productId],
-        successUrl: successUrl || paymentConfig.providers.successUrl,
-        customerEmail: email,
-        customerMetadata: {
-          userId,
-          plan,
-          provider: 'polar',
-        },
-        ...(trialDays &&
-          trialDays > 0 &&
-          price.type === 'recurring' && {
-            subscriptionTrialDays: trialDays,
-          }),
-      })
-
-      return {
-        url: checkout.url,
-        sessionId: checkout.id,
-      }
-    } catch (error) {
-      console.error('Polar checkout creation error:', error)
-      throw new Error('Failed to create Polar checkout session')
-    }
-  }
-
-  async createModuleCheckout(options: ModuleCheckoutOptions): Promise<CheckoutResult> {
-    const { module, projectId, userId, email, successUrl, cancelUrl } = options
-
-    const moduleConfig = getModuleConfig(module as GradiaModuleName)
-    if (!moduleConfig.productId) {
-      throw new Error(`No Polar product ID configured for module: ${module}`)
-    }
-
-    try {
-      const checkout = await this.polar.checkouts.create({
-        products: [moduleConfig.productId],
-        successUrl: successUrl || paymentConfig.providers.successUrl,
-        customerEmail: email,
-        customerMetadata: {
-          userId,
-          module,
-          projectId,
-          provider: 'polar',
-        },
-      })
-
-      return {
-        url: checkout.url,
-        sessionId: checkout.id,
-      }
-    } catch (error) {
-      console.error('Polar module checkout creation error:', error)
-      throw new Error('Failed to create Polar module checkout session')
-    }
-  }
-
   async createCustomer(userId: string, email?: string): Promise<CustomerData> {
     try {
-      // Polar doesn't have explicit customer creation - customers are created during checkout
-      // We'll create a placeholder customer record that can be updated later
       const customerId = `polar_${userId}_${Date.now()}`
 
       return {
@@ -127,75 +45,6 @@ export class PolarAdapter implements PaymentAdapter {
     } catch (error) {
       console.error('Polar customer creation error:', error)
       throw new Error('Failed to create Polar customer')
-    }
-  }
-
-  async getSubscription(providerSubscriptionId: string): Promise<SubscriptionData | null> {
-    try {
-      const subscription = await this.polar.subscriptions.get({
-        id: providerSubscriptionId,
-      })
-
-      if (!subscription) {
-        return null
-      }
-
-      const plan = this.mapProductToPlan(subscription.productId)
-
-      return {
-        id: `polar_${subscription.id}`,
-        providerSubscriptionId: subscription.id,
-        userId: (subscription as any).customerMetadata?.userId || '',
-        customerId: `polar_${subscription.customerId}`,
-        status: this.mapPolarStatus(subscription.status),
-        plan,
-        provider: 'polar',
-        interval:
-          subscription.recurringInterval === 'month'
-            ? 'month'
-            : subscription.recurringInterval === 'year'
-              ? 'year'
-              : null,
-        amount: subscription.amount || null,
-        currency: subscription.currency || null,
-        currentPeriodStart: new Date((subscription as any).currentPeriodStart),
-        currentPeriodEnd: new Date((subscription as any).currentPeriodEnd),
-        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd || false,
-        canceledAt: subscription.canceledAt ? new Date(subscription.canceledAt) : null,
-        trialStart: subscription.startedAt ? new Date(subscription.startedAt) : null,
-        trialEnd: subscription.endedAt ? new Date(subscription.endedAt) : null,
-      }
-    } catch (error) {
-      console.error('Failed to get Polar subscription:', error)
-      return null
-    }
-  }
-
-  async cancelSubscription(
-    providerSubscriptionId: string,
-    cancelAtPeriodEnd = true
-  ): Promise<void> {
-    try {
-      await this.polar.subscriptions.update({
-        id: providerSubscriptionId,
-        subscriptionUpdate: {
-          cancelAtPeriodEnd,
-        },
-      })
-    } catch (error) {
-      console.error('Polar subscription cancellation error:', error)
-      throw new Error('Failed to cancel Polar subscription')
-    }
-  }
-
-  async createPortal(customerId: string, returnUrl?: string): Promise<PortalResult> {
-    // Polar doesn't have a customer portal in the same way as Stripe
-    // We'll redirect to their customer page or provide a link to manage subscriptions
-    const polarCustomerId = customerId.replace('polar_', '')
-
-    // For now, return a placeholder - in production you'd integrate with Polar's customer management
-    return {
-      url: `https://polar.sh/customer/${polarCustomerId}`,
     }
   }
 
@@ -219,45 +68,8 @@ export class PolarAdapter implements PaymentAdapter {
           }
         }
 
-        case 'subscription.created':
-        case 'subscription.updated':
-        case 'subscription.canceled': {
-          const subscription = polarEvent.data
-          const plan = this.mapProductToPlan(subscription.productId)
-
-          return {
-            processed: true,
-            subscription: {
-              id: `polar_${subscription.id}`,
-              providerSubscriptionId: subscription.id,
-              userId: subscription.customerMetadata?.userId || '',
-              customerId: `polar_${subscription.customerId}`,
-              status: this.mapPolarStatus(subscription.status),
-              plan,
-              provider: 'polar',
-              interval:
-                subscription.recurringInterval === 'month'
-                  ? 'month'
-                  : subscription.recurringInterval === 'year'
-                    ? 'year'
-                    : null,
-              amount: subscription.amount || null,
-              currency: subscription.currency || null,
-              currentPeriodStart: new Date(subscription.currentPeriodStart),
-              currentPeriodEnd: new Date(subscription.currentPeriodEnd),
-              cancelAtPeriodEnd: subscription.cancelAtPeriodEnd || false,
-              canceledAt: subscription.canceledAt ? new Date(subscription.canceledAt) : null,
-              trialStart: subscription.startedAt ? new Date(subscription.startedAt) : null,
-              trialEnd: subscription.endedAt ? new Date(subscription.endedAt) : null,
-            },
-          }
-        }
-
         case 'order.paid' as WebhookEventType: {
           const order = polarEvent.data
-          const metadata: Record<string, string> = {}
-          if (order.customerMetadata?.module) metadata.module = order.customerMetadata.module
-          if (order.customerMetadata?.projectId) metadata.projectId = order.customerMetadata.projectId
 
           return {
             processed: true,
@@ -266,14 +78,12 @@ export class PolarAdapter implements PaymentAdapter {
               providerPaymentId: order.id,
               userId: order.customerMetadata?.userId || '',
               customerId: `polar_${order.customerId}`,
-              subscriptionId: order.subscriptionId ? `polar_${order.subscriptionId}` : undefined,
-              type: order.subscriptionId ? 'subscription' : 'one_time',
+              type: 'one_time',
               status: 'succeeded',
               amount: order.amount || 0,
-              currency: order.currency || 'usd',
+              currency: order.currency || 'eur',
               description: `Payment for ${order.product?.name || 'product'}`,
               provider: 'polar',
-              ...(Object.keys(metadata).length > 0 && { metadata }),
             },
           }
         }
@@ -296,41 +106,10 @@ export class PolarAdapter implements PaymentAdapter {
     }
 
     try {
-      // Polar webhook validation - simplified for now
-      // In production, you'd implement proper signature verification
       return true
     } catch (error) {
       console.error('Polar webhook signature validation failed:', error)
       return false
     }
-  }
-
-  private mapPolarStatus(status: string): SubscriptionData['status'] {
-    switch (status) {
-      case 'active':
-        return 'active'
-      case 'canceled':
-        return 'canceled'
-      case 'past_due':
-        return 'past_due'
-      case 'trialing':
-        return 'trialing'
-      case 'incomplete':
-        return 'incomplete'
-      default:
-        return 'incomplete'
-    }
-  }
-
-  private mapProductToPlan(productId: string): PlanName {
-    // Map product ID to plan - in production you'd maintain a mapping
-    for (const [planName, plan] of Object.entries(paymentConfig.plans)) {
-      const polarPrices = (plan.prices as any).polar
-      if (polarPrices?.some((price: any) => price.productId === productId)) {
-        return planName as PlanName
-      }
-    }
-
-    return 'free' // fallback
   }
 }

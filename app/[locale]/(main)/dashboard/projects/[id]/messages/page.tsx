@@ -3,7 +3,7 @@ import { eq, asc } from 'drizzle-orm'
 
 import { auth } from '@/lib/auth/auth'
 import { db } from '@/database'
-import { message, user } from '@/database/schema'
+import { messageChannel } from '@/database/schema'
 import { MessagesContent } from './messages-content'
 
 export default async function MessagesPage({
@@ -15,28 +15,26 @@ export default async function MessagesPage({
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) return null
 
-  const msgs = await db
+  // Fetch channels
+  const channels = await db
     .select({
-      id: message.id,
-      content: message.content,
-      senderId: message.senderId,
-      senderName: user.name,
-      senderRole: user.role,
-      createdAt: message.createdAt,
+      id: messageChannel.id,
+      name: messageChannel.name,
+      label: messageChannel.label,
+      type: messageChannel.type,
+      contractorId: messageChannel.contractorId,
+      order: messageChannel.order,
     })
-    .from(message)
-    .innerJoin(user, eq(message.senderId, user.id))
-    .where(eq(message.projectId, id))
-    .orderBy(asc(message.createdAt))
+    .from(messageChannel)
+    .where(eq(messageChannel.projectId, id))
+    .orderBy(asc(messageChannel.order))
 
   return (
     <MessagesContent
       projectId={id}
-      messages={msgs.map((m) => ({
-        ...m,
-        createdAt: m.createdAt.toISOString(),
-      }))}
+      channels={channels}
       currentUserId={session.user.id}
+      currentUserName={session.user.name}
     />
   )
 }

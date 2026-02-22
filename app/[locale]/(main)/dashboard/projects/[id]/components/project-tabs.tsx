@@ -11,7 +11,6 @@ import {
   HardHat,
 } from 'lucide-react'
 import { Tabs, TabsList, TabsTab, TabsPanel } from '@/components/ui/tabs'
-import type { ProjectModules } from '@/config/project'
 
 import { OverviewTab } from './overview-tab'
 import { MessagesTab } from './messages-tab'
@@ -24,7 +23,6 @@ interface ProjectTabsProps {
     title: string
     status: string
     phase: string
-    modules: ProjectModules
     services: { architect: string; contractors: string; adminHelp: string }
     aiSummary: Record<string, unknown> | null
     propertyType: string | null
@@ -96,27 +94,14 @@ export const ProjectTabs = ({
   const router = useRouter()
   const pathname = usePathname()
 
-  const tabs = useMemo(() => {
-    const t = [
-      { id: 'overview', label: 'Projet', icon: FolderKanban },
-      { id: 'messages', label: 'Messages', icon: MessageSquare },
-      { id: 'documents', label: 'Documents', icon: FileText },
-    ]
-
-    if (project.modules.wallet || project.paymentStatus === 'paid') {
-      t.push({ id: 'finances', label: 'Finances', icon: Wallet })
-    }
-
-    if (project.modules.design) {
-      t.push({ id: 'conception', label: 'Conception', icon: Palette })
-    }
-
-    if (project.modules.works) {
-      t.push({ id: 'travaux', label: 'Travaux', icon: HardHat })
-    }
-
-    return t
-  }, [project.modules, project.paymentStatus])
+  const tabs = useMemo(() => [
+    { id: 'overview', label: 'Projet', icon: FolderKanban },
+    { id: 'messages', label: 'Messages', icon: MessageSquare },
+    { id: 'documents', label: 'Documents', icon: FileText },
+    { id: 'finances', label: 'Finances', icon: Wallet },
+    { id: 'conception', label: 'Conception', icon: Palette },
+    { id: 'travaux', label: 'Travaux', icon: HardHat },
+  ], [])
 
   const tabParam = searchParams.get('tab')
   const activeTab = tabs.some((t) => t.id === tabParam) ? tabParam! : 'overview'
@@ -167,43 +152,36 @@ export const ProjectTabs = ({
         <DocumentsTab
           projectId={project.id}
           documents={documents}
-          designModuleActive={project.modules.design}
         />
       </TabsPanel>
 
-      {(project.modules.wallet || project.paymentStatus === 'paid') && (
-        <TabsPanel value='finances' className='pt-6'>
-          <FinancesTab payments={payments} />
-        </TabsPanel>
-      )}
+      <TabsPanel value='finances' className='pt-6'>
+        <FinancesTab payments={payments} />
+      </TabsPanel>
 
-      {project.modules.design && (
-        <TabsPanel value='conception' className='pt-6'>
-          <div className='rounded-xl border border-[#e8e4df] bg-white p-8 text-center'>
-            <Palette className='size-8 text-[#c9a96e] mx-auto mb-3' />
-            <h3 className='font-semibold text-[#1a1a2e] mb-1' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>
-              Conception
-            </h3>
-            <p className='text-sm text-muted-foreground'>
-              Le suivi de conception sera disponible une fois la phase lancée par votre chef de projet.
-            </p>
-          </div>
-        </TabsPanel>
-      )}
+      <TabsPanel value='conception' className='pt-6'>
+        <div className='rounded-xl border border-[#e8e4df] bg-white p-8 text-center'>
+          <Palette className='size-8 text-[#c9a96e] mx-auto mb-3' />
+          <h3 className='font-semibold text-[#1a1a2e] mb-1' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>
+            Conception
+          </h3>
+          <p className='text-sm text-muted-foreground'>
+            Le suivi de conception sera disponible une fois la phase lancée par votre chef de projet.
+          </p>
+        </div>
+      </TabsPanel>
 
-      {project.modules.works && (
-        <TabsPanel value='travaux' className='pt-6'>
-          <div className='rounded-xl border border-[#e8e4df] bg-white p-8 text-center'>
-            <HardHat className='size-8 text-[#c9a96e] mx-auto mb-3' />
-            <h3 className='font-semibold text-[#1a1a2e] mb-1' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>
-              Suivi travaux
-            </h3>
-            <p className='text-sm text-muted-foreground'>
-              Le suivi de chantier sera disponible une fois les travaux démarrés.
-            </p>
-          </div>
-        </TabsPanel>
-      )}
+      <TabsPanel value='travaux' className='pt-6'>
+        <div className='rounded-xl border border-[#e8e4df] bg-white p-8 text-center'>
+          <HardHat className='size-8 text-[#c9a96e] mx-auto mb-3' />
+          <h3 className='font-semibold text-[#1a1a2e] mb-1' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>
+            Suivi travaux
+          </h3>
+          <p className='text-sm text-muted-foreground'>
+            Le suivi de chantier sera disponible une fois les travaux démarrés.
+          </p>
+        </div>
+      </TabsPanel>
     </Tabs>
   )
 }

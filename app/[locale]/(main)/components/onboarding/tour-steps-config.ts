@@ -1,52 +1,55 @@
 export interface TourStep {
   id: string
-  target: string // data-tour attribute value
+  target?: string // data-tour attribute value on the target element — optional for modal steps
   title: string
   description: string
-  position: 'top' | 'bottom' | 'left' | 'right'
+  position?: 'top' | 'bottom' | 'left' | 'right'
 }
 
 export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    target: 'welcome',
-    title: 'Bienvenue sur Gradia',
-    description: 'Votre espace client pour piloter votre projet de rénovation. Laissez-nous vous faire un tour rapide.',
-    position: 'bottom',
+    title: 'Bienvenue sur Gradia !',
+    description: 'D\u00e9couvrez votre espace projet en quelques \u00e9tapes. Nous allons vous guider.',
   },
   {
-    id: 'sidebar-nav',
+    id: 'sidebar',
     target: 'sidebar-nav',
     title: 'Navigation',
-    description: 'Accédez à vos projets et naviguez entre les différentes sections depuis la barre latérale.',
+    description: 'Naviguez entre les sections de votre projet depuis ce menu lat\u00e9ral.',
     position: 'right',
   },
   {
     id: 'overview',
-    target: 'overview-grid',
-    title: 'Vue d\'ensemble',
-    description: 'Retrouvez toutes les informations clés de votre projet en un coup d\'œil : avancement, budget, prochaines actions.',
-    position: 'bottom',
+    target: 'overview-nav',
+    title: 'Vue d\u2019ensemble',
+    description: 'Vue d\u2019ensemble de votre projet et ses avanc\u00e9es.',
+    position: 'right',
   },
   {
-    id: 'rdv-cadrage',
-    target: 'rdv-cadrage',
-    title: 'Rendez-vous de cadrage',
-    description: 'Réservez un créneau gratuit avec votre chef de projet pour définir le plan d\'action.',
-    position: 'left',
+    id: 'messages',
+    target: 'messages-nav',
+    title: 'Messages',
+    description: 'Communiquez avec votre chef de projet et vos artisans.',
+    position: 'right',
   },
   {
-    id: 'messages-docs',
-    target: 'messages-docs',
-    title: 'Messages & Documents',
-    description: 'Échangez avec votre chef de projet et partagez vos documents directement depuis l\'application.',
+    id: 'documents',
+    target: 'documents-nav',
+    title: 'Documents',
+    description: 'Retrouvez tous vos documents projet : devis, plans, factures.',
+    position: 'right',
+  },
+  {
+    id: 'artisans',
+    target: 'artisans-nav',
+    title: 'Artisans',
+    description: 'Suivez les devis et artisans s\u00e9lectionn\u00e9s pour votre projet.',
     position: 'right',
   },
   {
     id: 'ready',
-    target: 'ready',
-    title: 'Vous êtes prêt !',
-    description: 'Explorez votre espace et n\'hésitez pas à nous contacter si vous avez des questions.',
-    position: 'bottom',
+    title: 'Vous \u00eates pr\u00eat !',
+    description: 'N\u2019h\u00e9sitez pas \u00e0 explorer votre espace. Nous sommes l\u00e0 pour vous accompagner.',
   },
 ]

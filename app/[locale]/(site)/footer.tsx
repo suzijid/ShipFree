@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 const Footer = () => {
   return (
-    <footer className='py-12 bg-[#1a1a2e] text-white'>
+    <footer className='py-12 bg-[#202020] text-white'>
       <div className='max-w-6xl mx-auto px-6'>
         <div className='grid md:grid-cols-4 gap-8 mb-10'>
           <div>
@@ -18,25 +18,23 @@ const Footer = () => {
               </span>
             </Link>
             <p className='text-sm text-white/60'>
-              La plateforme qui connecte les meilleurs artisans à vos projets de rénovation.
+              Votre r&eacute;novation, pilot&eacute;e de A &agrave; Z par un chef de projet d&eacute;di&eacute;.
             </p>
           </div>
 
           <div>
             <h4 className='text-sm font-semibold mb-4'>Plateforme</h4>
             <ul className='space-y-2'>
-              <li><a href='#comment-ca-marche' className='text-sm text-white/60 hover:text-white transition-colors'>Comment ça marche</a></li>
-              <li><a href='#garanties' className='text-sm text-white/60 hover:text-white transition-colors'>Garanties</a></li>
-              <li><a href='#tarifs' className='text-sm text-white/60 hover:text-white transition-colors'>Tarifs</a></li>
+              <li><a href='#comment-ca-marche' className='text-sm text-white/60 hover:text-white transition-colors'>Comment &ccedil;a marche</a></li>
               <li><a href='#faq' className='text-sm text-white/60 hover:text-white transition-colors'>FAQ</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className='text-sm font-semibold mb-4'>Légal</h4>
+            <h4 className='text-sm font-semibold mb-4'>L&eacute;gal</h4>
             <ul className='space-y-2'>
-              <li><Link href='/mentions-legales' className='text-sm text-white/60 hover:text-white transition-colors'>Mentions légales</Link></li>
-              <li><Link href='/confidentialite' className='text-sm text-white/60 hover:text-white transition-colors'>Politique de confidentialité</Link></li>
+              <li><Link href='/mentions-legales' className='text-sm text-white/60 hover:text-white transition-colors'>Mentions l&eacute;gales</Link></li>
+              <li><Link href='/confidentialite' className='text-sm text-white/60 hover:text-white transition-colors'>Politique de confidentialit&eacute;</Link></li>
               <li><Link href='/cgv' className='text-sm text-white/60 hover:text-white transition-colors'>CGV</Link></li>
             </ul>
           </div>
@@ -44,7 +42,7 @@ const Footer = () => {
           <div>
             <h4 className='text-sm font-semibold mb-4'>Commencer</h4>
             <ul className='space-y-2'>
-              <li><Link href='/questionnaire' className='text-sm text-white/60 hover:text-white transition-colors'>Décrire mon projet</Link></li>
+              <li><Link href='/questionnaire' className='text-sm text-white/60 hover:text-white transition-colors'>D&eacute;crire mon projet</Link></li>
               <li><Link href='/login' className='text-sm text-white/60 hover:text-white transition-colors'>Se connecter</Link></li>
             </ul>
           </div>
@@ -52,7 +50,7 @@ const Footer = () => {
 
         <div className='border-t border-white/10 pt-6 text-center'>
           <p className='text-xs text-white/40'>
-            © {new Date().getFullYear()} Gradia. Tous droits réservés.
+            &copy; {new Date().getFullYear()} Gradia. Tous droits r&eacute;serv&eacute;s.
           </p>
         </div>
       </div>

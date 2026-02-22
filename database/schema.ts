@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm'
-import { pgTable, text, timestamp, boolean, index, decimal, integer, jsonb } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, index, uniqueIndex, decimal, integer, jsonb } from 'drizzle-orm/pg-core'
 
 // ============================================================================
 // Auth tables (Better-Auth managed)
@@ -110,6 +110,8 @@ export const project = pgTable(
     progress: integer('progress').default(0).notNull(),
     matchingStatus: text('matching_status').default('open').notNull(), // 'open'|'matching'|'matched'|'in_progress'|'completed'
     paymentStatus: text('payment_status').default('pending').notNull(),
+    commissionRate: decimal('commission_rate', { precision: 5, scale: 4 }).default('0.1000'),
+    warrantyExpiresAt: timestamp('warranty_expires_at'),
     stripeSessionId: text('stripe_session_id'),
     paidAt: timestamp('paid_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -229,12 +231,15 @@ export const document = pgTable(
     mimeType: text('mime_type'),
     size: integer('size'), // bytes
     category: text('category').default('photos').notNull(), // FileCategory
+    version: integer('version').default(1).notNull(),
+    parentDocumentId: text('parent_document_id'), // self-reference for versioning
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     index('document_projectId_idx').on(table.projectId),
     index('document_uploadedById_idx').on(table.uploadedById),
     index('document_category_idx').on(table.category),
+    index('document_parentDocumentId_idx').on(table.parentDocumentId),
   ]
 )
 
@@ -247,11 +252,14 @@ export const messageChannel = pgTable(
       .references(() => project.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     label: text('label').notNull(),
+    type: text('type').default('public').notNull(), // 'public' | 'private_contractor'
+    contractorId: text('contractor_id'), // for private channels, links to contractor
     order: integer('order').default(0).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => [
     index('messageChannel_projectId_idx').on(table.projectId),
+    index('messageChannel_type_idx').on(table.type),
   ]
 )
 
@@ -441,6 +449,73 @@ export const designServiceBooking = pgTable(
 )
 
 // ============================================================================
+// Gradia — Notifications tables
+// ============================================================================
+
+export const notification = pgTable(
+  'notification',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    projectId: text('project_id')
+      .references(() => project.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(), // 'new_message' | 'new_proposal' | 'payment_due' | 'phase_changed' | 'document_uploaded' | 'booking_update' | 'milestone_validated' | 'system'
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    link: text('link'), // relative URL to navigate to
+    read: boolean('read').default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('notification_userId_idx').on(table.userId),
+    index('notification_read_idx').on(table.read),
+    index('notification_createdAt_idx').on(table.createdAt),
+    index('notification_userId_read_idx').on(table.userId, table.read),
+  ]
+)
+
+export const notificationPreference = pgTable(
+  'notification_preference',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    channel: text('channel').notNull(), // 'in_app' | 'email' | 'push' | 'sms'
+    notificationType: text('notification_type').notNull(), // same as notification.type + 'all'
+    enabled: boolean('enabled').default(true).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('notificationPreference_userId_idx').on(table.userId),
+    index('notificationPreference_userId_channel_type_idx').on(table.userId, table.channel, table.notificationType),
+  ]
+)
+
+export const pushSubscription = pgTable(
+  'push_subscription',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    endpoint: text('endpoint').notNull(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('pushSubscription_userId_idx').on(table.userId),
+  ]
+)
+
+// ============================================================================
 // Payment system tables (Stripe one-shot for Gradia)
 // ============================================================================
 
@@ -534,6 +609,31 @@ export const payment = pgTable(
 )
 
 // ============================================================================
+// Gradia — Questionnaire draft (server-side save)
+// ============================================================================
+
+export const questionnaireDraft = pgTable(
+  'questionnaire_draft',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .references(() => user.id, { onDelete: 'cascade' }),
+    sessionId: text('session_id'),
+    currentStep: integer('current_step').default(0).notNull(),
+    data: jsonb('data').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('questionnaireDraft_userId_idx').on(table.userId),
+    uniqueIndex('questionnaireDraft_sessionId_idx').on(table.sessionId),
+  ]
+)
+
+// ============================================================================
 // Relations
 // ============================================================================
 
@@ -547,6 +647,9 @@ export const userRelations = relations(user, ({ many }) => ({
   contractorProfile: many(contractor),
   reviews: many(review),
   designServiceBookings: many(designServiceBooking),
+  notifications: many(notification),
+  notificationPreferences: many(notificationPreference),
+  pushSubscriptions: many(pushSubscription),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -761,5 +864,39 @@ export const paymentRelations = relations(payment, ({ one }) => ({
   subscription: one(subscription, {
     fields: [payment.subscriptionId],
     references: [subscription.id],
+  }),
+}))
+
+// ── Notification relations ─────────────────────────────────────────────────
+
+export const notificationRelations = relations(notification, ({ one }) => ({
+  user: one(user, {
+    fields: [notification.userId],
+    references: [user.id],
+  }),
+  project: one(project, {
+    fields: [notification.projectId],
+    references: [project.id],
+  }),
+}))
+
+export const notificationPreferenceRelations = relations(notificationPreference, ({ one }) => ({
+  user: one(user, {
+    fields: [notificationPreference.userId],
+    references: [user.id],
+  }),
+}))
+
+export const pushSubscriptionRelations = relations(pushSubscription, ({ one }) => ({
+  user: one(user, {
+    fields: [pushSubscription.userId],
+    references: [user.id],
+  }),
+}))
+
+export const questionnaireDraftRelations = relations(questionnaireDraft, ({ one }) => ({
+  user: one(user, {
+    fields: [questionnaireDraft.userId],
+    references: [user.id],
   }),
 }))

@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 
 import { getPaymentAdapter } from '@/lib/payments/service'
 import { db } from '@/database'
-import { customer, subscription, payment, project, projectEvent } from '@/database/schema'
+import { customer, payment, designServiceBooking, project, projectEvent } from '@/database/schema'
 import type { WebhookEvent } from '@/lib/payments/types'
 
 export async function POST(req: Request) {
@@ -118,69 +118,6 @@ export async function POST(req: Request) {
         }
       }
 
-      // Handle subscription updates
-      if (result.subscription) {
-        const existingSub = await db.query.subscription.findFirst({
-          where: eq(
-            subscription.providerSubscriptionId,
-            result.subscription.providerSubscriptionId
-          ),
-        })
-
-        // Find customer if not provided directly but we have customerId
-        let dbCustomerId = result.subscription.customerId
-        if (!dbCustomerId && existingSub) {
-          dbCustomerId = existingSub.customerId || undefined
-        }
-
-        // If we still don't have a DB customer ID but have a provider customer ID, look it up
-        if (!dbCustomerId && result.customer?.providerCustomerId) {
-          const linkedCustomer = await db.query.customer.findFirst({
-            where: eq(customer.providerCustomerId, result.customer.providerCustomerId),
-          })
-          dbCustomerId = linkedCustomer?.id
-        }
-
-        if (existingSub) {
-          await db
-            .update(subscription)
-            .set({
-              status: result.subscription.status,
-              plan: result.subscription.plan,
-              interval: result.subscription.interval,
-              amount: result.subscription.amount ? result.subscription.amount.toString() : null,
-              currency: result.subscription.currency,
-              currentPeriodStart: result.subscription.currentPeriodStart,
-              currentPeriodEnd: result.subscription.currentPeriodEnd,
-              cancelAtPeriodEnd: result.subscription.cancelAtPeriodEnd,
-              canceledAt: result.subscription.canceledAt,
-              trialStart: result.subscription.trialStart,
-              trialEnd: result.subscription.trialEnd,
-              updatedAt: new Date(),
-            })
-            .where(eq(subscription.id, existingSub.id))
-        } else if (result.subscription.userId) {
-          await db.insert(subscription).values({
-            id: result.subscription.id,
-            userId: result.subscription.userId,
-            customerId: dbCustomerId,
-            provider: result.subscription.provider,
-            providerSubscriptionId: result.subscription.providerSubscriptionId,
-            status: result.subscription.status,
-            plan: result.subscription.plan,
-            interval: result.subscription.interval,
-            amount: result.subscription.amount ? result.subscription.amount.toString() : null,
-            currency: result.subscription.currency,
-            currentPeriodStart: result.subscription.currentPeriodStart,
-            currentPeriodEnd: result.subscription.currentPeriodEnd,
-            cancelAtPeriodEnd: result.subscription.cancelAtPeriodEnd,
-            canceledAt: result.subscription.canceledAt,
-            trialStart: result.subscription.trialStart,
-            trialEnd: result.subscription.trialEnd,
-          })
-        }
-      }
-
       // Handle payment updates
       if (result.payment) {
         const existingPayment = await db.query.payment.findFirst({
@@ -215,49 +152,56 @@ export async function POST(req: Request) {
           })
         }
 
-        // Gradia: activate module on project if metadata present
-        const meta = result.payment.metadata
-        if (meta?.projectId && meta?.module && result.payment.status === 'succeeded') {
-          const [proj] = await db
-            .select({ id: project.id, modules: project.modules, paymentStatus: project.paymentStatus })
+      }
+
+      // Handle design service payment auto-activation
+      // For Stripe checkout.session.completed with design-service metadata
+      if (
+        event.type === 'checkout.session.completed' &&
+        event.data?.metadata?.type === 'design-service'
+      ) {
+        const metadata = event.data.metadata as Record<string, string>
+        const bookingId = metadata.bookingId
+        const projectId = metadata.projectId
+
+        if (bookingId) {
+          await db
+            .update(designServiceBooking)
+            .set({
+              status: 'scheduled',
+              stripePaymentId: (event.data as Record<string, unknown>).payment_intent as string ?? null,
+            })
+            .where(eq(designServiceBooking.id, bookingId))
+        }
+
+        if (projectId) {
+          // Activate design module on the project
+          const [p] = await db
+            .select({ modules: project.modules })
             .from(project)
-            .where(eq(project.id, meta.projectId))
+            .where(eq(project.id, projectId))
             .limit(1)
 
-          if (proj) {
-            const currentModules = (proj.modules || { design: false, works: false, wallet: false }) as {
-              design: boolean
-              works: boolean
-              wallet: boolean
-            }
-
-            if (meta.module === 'base') {
-              await db
-                .update(project)
-                .set({ paymentStatus: 'paid', paidAt: new Date() })
-                .where(eq(project.id, meta.projectId))
-            } else if (meta.module === 'design' || meta.module === 'works' || meta.module === 'wallet') {
-              await db
-                .update(project)
-                .set({
-                  modules: { ...currentModules, [meta.module]: true },
-                })
-                .where(eq(project.id, meta.projectId))
-            }
-
-            // Insert project event
-            await db.insert(projectEvent).values({
-              id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-              projectId: meta.projectId,
-              type: 'payment',
-              data: {
-                module: meta.module,
-                amount: result.payment.amount,
-                currency: result.payment.currency,
-                providerPaymentId: result.payment.providerPaymentId,
-              },
-            })
+          if (p) {
+            const currentModules = p.modules as { design: boolean; works: boolean; wallet: boolean }
+            await db
+              .update(project)
+              .set({
+                modules: { ...currentModules, design: true },
+              })
+              .where(eq(project.id, projectId))
           }
+
+          await db.insert(projectEvent).values({
+            id: crypto.randomUUID(),
+            projectId,
+            type: 'module_activated',
+            data: {
+              module: 'design',
+              bookingId,
+              trigger: 'design_service_payment',
+            },
+          })
         }
       }
     }

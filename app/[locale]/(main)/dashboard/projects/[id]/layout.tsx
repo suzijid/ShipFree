@@ -24,11 +24,6 @@ export default async function ProjectLayout({
   if (!access) return notFound()
 
   const p = access.project
-  const modules = (p.modules || { design: false, works: false, wallet: false }) as {
-    design: boolean
-    works: boolean
-    wallet: boolean
-  }
   const services = (p.services || { architect: 'no', contractors: 'no', adminHelp: 'no' }) as {
     architect: string
     contractors: string
@@ -69,7 +64,6 @@ export default async function ProjectLayout({
     title: p.title,
     status: p.status,
     phase: p.phase,
-    modules,
     services,
     aiSummary: p.aiSummary as Record<string, unknown> | null,
     propertyType: p.propertyType,

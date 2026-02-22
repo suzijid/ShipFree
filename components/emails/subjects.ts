@@ -8,6 +8,11 @@ export type EmailSubjectType =
   | 'reset-password'
   | 'invitation'
   | 'welcome'
+  | 'new-message'
+  | 'new-proposal'
+  | 'payment-due'
+  | 'phase-changed'
+  | 'document-uploaded'
 
 /**
  * Returns the email subject line for a given email type.
@@ -30,6 +35,16 @@ export function getEmailSubject(type: EmailSubjectType): string {
       return `You've been invited to join a team on ${brandName}`
     case 'welcome':
       return `Welcome to ${brandName}`
+    case 'new-message':
+      return `Nouveau message dans votre projet — ${brandName}`
+    case 'new-proposal':
+      return `Nouveau devis reçu — ${brandName}`
+    case 'payment-due':
+      return `Paiement en attente — ${brandName}`
+    case 'phase-changed':
+      return `Changement de phase projet — ${brandName}`
+    case 'document-uploaded':
+      return `Nouveau document ajouté — ${brandName}`
     default:
       return brandName
   }

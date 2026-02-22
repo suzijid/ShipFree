@@ -2,6 +2,8 @@
 export * from './_styles'
 // Auth emails
 export * from './auth'
+// Notification emails
+export * from './notifications'
 // Render functions and subjects
 export * from './render'
 export * from './subjects'

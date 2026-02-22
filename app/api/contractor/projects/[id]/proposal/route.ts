@@ -4,7 +4,9 @@ import { eq, and } from 'drizzle-orm'
 
 import { requireContractorApi } from '@/lib/auth/require-contractor'
 import { db } from '@/database'
-import { projectContractor, proposal } from '@/database/schema'
+import { projectContractor, proposal, project } from '@/database/schema'
+import { notificationService } from '@/lib/notifications/notification-service'
+import { renderNewProposalEmail, getEmailSubject } from '@/components/emails'
 
 const proposalSchema = z.object({
   amount: z.number().positive(),
@@ -65,6 +67,43 @@ export const POST = async (
     .update(projectContractor)
     .set({ status: 'proposal_sent' })
     .where(eq(projectContractor.id, pc.id))
+
+  // ── Notification trigger ─────────────────────────────────────────
+  try {
+    const [p] = await db
+      .select({ userId: project.userId, title: project.title })
+      .from(project)
+      .where(eq(project.id, projectId))
+      .limit(1)
+
+    if (p) {
+      const contractorName = result.contractor.companyName
+      const link = `/dashboard/projects/${projectId}/artisans`
+
+      await notificationService.create({
+        userId: p.userId,
+        projectId,
+        type: 'new_proposal',
+        title: `Nouveau devis de ${contractorName}`,
+        body: `Montant : ${parsed.data.amount} €`,
+        link,
+      })
+
+      const html = await renderNewProposalEmail({
+        projectTitle: p.title,
+        contractorName,
+        amount: parsed.data.amount.toString(),
+        projectLink: link,
+      })
+
+      notificationService.sendEmail(p.userId, 'new_proposal', {
+        subject: getEmailSubject('new-proposal'),
+        html,
+      }).catch(() => {})
+    }
+  } catch (err) {
+    console.error('[notifications] Failed to send new_proposal notification:', err)
+  }
 
   return NextResponse.json({ id: proposalId }, { status: 201 })
 }

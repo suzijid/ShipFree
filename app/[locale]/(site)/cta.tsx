@@ -1,40 +1,24 @@
-'use client'
-
-import { ArrowUpRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default function CTA() {
   return (
-    <section className='py-24 px-4 sm:px-6 bg-[#F4F4F5]'>
-      <div className='mx-auto max-w-4xl'>
-        {/* Section label */}
+    <section className='py-20 md:py-28 px-6 bg-[#202020]'>
+      <div className='mx-auto max-w-2xl text-center'>
         <h2
-          className='text-center text-sm font-medium text-muted-foreground mb-8'
-          style={{ fontFamily: 'var(--font-geist-mono)' }}
+          className='text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-5'
+          style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
         >
-          GET STARTED
+          Pr&ecirc;t &agrave; d&eacute;marrer votre projet ?
         </h2>
-
-        {/* Main heading */}
-        <div className='text-center mb-12'>
-          <h2 className='text-4xl font-semibold tracking-tight mb-4'>
-            Your next product could be live by tonight.
-          </h2>
-          <p className='text-lg text-muted-foreground'>
-            Focus on growth while the stack takes care of the heavy lifting
-          </p>
-        </div>
-
-        {/* Buttons */}
-        <div className='mx-auto mt-10 flex items-center justify-center gap-4'>
-          <Button className='font-semibold h-12! px-8 text-base text-white'>
-            Get ShipFree
-          </Button>
-          <Button variant='outline' className='font-semibold h-12! px-8 text-base'>
-            Try demo
-            <ArrowUpRight className='h-8 w-8' />
-          </Button>
-        </div>
+        <p className='text-base text-white/60 mb-10 max-w-lg mx-auto'>
+          D&eacute;crivez votre r&eacute;novation en 5 minutes et recevez votre fiche projet gratuite.
+        </p>
+        <Link
+          href='/questionnaire'
+          className='inline-flex items-center justify-center bg-[#c9a96e] text-white px-8 py-4 rounded-full text-base font-medium hover:bg-[#b8944f] transition-colors'
+        >
+          D&eacute;crire mon projet
+        </Link>
       </div>
     </section>
   )

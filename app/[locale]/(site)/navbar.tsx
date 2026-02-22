@@ -8,14 +8,14 @@ const Navbar = () => {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className='fixed top-0 inset-x-0 z-50 bg-[#fafaf8]/80 backdrop-blur-lg border-b border-[#e8e4df]/50'>
-      <div className='max-w-6xl mx-auto px-6 h-16 flex items-center justify-between'>
+    <header className='fixed top-0 inset-x-0 z-50 bg-white/90 backdrop-blur-lg border-b border-[#E4E0DE]/60'>
+      <div className='max-w-6xl mx-auto px-6 h-16 md:h-[72px] flex items-center justify-between'>
         <Link href='/' className='flex items-center gap-2'>
           <div className='flex items-center justify-center size-8 rounded-xl bg-gradient-to-br from-[#c9a96e] to-[#b8944f] text-white shadow-sm'>
             <span className='text-sm font-bold' style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}>G</span>
           </div>
           <span
-            className='text-lg font-semibold text-[#1a1a2e]'
+            className='text-lg font-semibold text-[#202020]'
             style={{ fontFamily: 'var(--font-bricolage-grotesque)' }}
           >
             Gradia
@@ -23,16 +23,10 @@ const Navbar = () => {
         </Link>
 
         <nav className='hidden md:flex items-center gap-8'>
-          <a href='#comment-ca-marche' className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors'>
-            Comment ça marche
+          <a href='#comment-ca-marche' className='text-sm text-[#626262] hover:text-[#202020] transition-colors'>
+            Comment &ccedil;a marche
           </a>
-          <a href='#garanties' className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors'>
-            Garanties
-          </a>
-          <a href='#tarifs' className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors'>
-            Tarifs
-          </a>
-          <a href='#faq' className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors'>
+          <a href='#faq' className='text-sm text-[#626262] hover:text-[#202020] transition-colors'>
             FAQ
           </a>
         </nav>
@@ -40,36 +34,34 @@ const Navbar = () => {
         <div className='hidden md:flex items-center gap-3'>
           <Link
             href='/login'
-            className='text-sm text-[#6b6b6b] hover:text-[#1a1a2e] transition-colors px-3 py-2'
+            className='text-sm text-[#626262] hover:text-[#202020] transition-colors px-3 py-2'
           >
             Connexion
           </Link>
           <Link
             href='/questionnaire'
-            className='text-sm font-medium bg-[#1a1a2e] text-white px-5 py-2.5 rounded-full hover:bg-[#2d2d4e] transition-colors'
+            className='text-sm font-medium bg-[#c9a96e] text-white px-5 py-2.5 rounded-full hover:bg-[#b8944f] transition-colors'
           >
-            Commencer
+            D&eacute;crire mon projet
           </Link>
         </div>
 
         <button onClick={() => setOpen(!open)} className='md:hidden p-2'>
-          {open ? <X className='size-5 text-[#1a1a2e]' /> : <Menu className='size-5 text-[#1a1a2e]' />}
+          {open ? <X className='size-5 text-[#202020]' /> : <Menu className='size-5 text-[#202020]' />}
         </button>
       </div>
 
       {open && (
-        <div className='md:hidden bg-[#fafaf8] border-t border-[#e8e4df] px-6 py-4 space-y-3'>
-          <a href='#comment-ca-marche' onClick={() => setOpen(false)} className='block text-sm text-[#6b6b6b] py-2'>Comment ça marche</a>
-          <a href='#garanties' onClick={() => setOpen(false)} className='block text-sm text-[#6b6b6b] py-2'>Garanties</a>
-          <a href='#tarifs' onClick={() => setOpen(false)} className='block text-sm text-[#6b6b6b] py-2'>Tarifs</a>
-          <a href='#faq' onClick={() => setOpen(false)} className='block text-sm text-[#6b6b6b] py-2'>FAQ</a>
-          <div className='pt-2 border-t border-[#e8e4df] space-y-2'>
-            <Link href='/login' className='block text-sm text-[#6b6b6b] py-2'>Connexion</Link>
+        <div className='md:hidden bg-white border-t border-[#E4E0DE] px-6 py-4 space-y-3'>
+          <a href='#comment-ca-marche' onClick={() => setOpen(false)} className='block text-sm text-[#626262] py-2'>Comment &ccedil;a marche</a>
+          <a href='#faq' onClick={() => setOpen(false)} className='block text-sm text-[#626262] py-2'>FAQ</a>
+          <div className='pt-2 border-t border-[#CDC3B9] space-y-2'>
+            <Link href='/login' className='block text-sm text-[#626262] py-2'>Connexion</Link>
             <Link
               href='/questionnaire'
-              className='block text-center text-sm font-medium bg-[#1a1a2e] text-white px-5 py-2.5 rounded-full'
+              className='block text-center text-sm font-medium bg-[#c9a96e] text-white px-5 py-2.5 rounded-full'
             >
-              Commencer
+              D&eacute;crire mon projet
             </Link>
           </div>
         </div>
