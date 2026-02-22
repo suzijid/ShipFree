@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Send, Loader2, Paperclip, X, FileText, Download, Lock, Hash } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import Image from 'next/image'
 import { GlassButton } from '../../../../components/glass-primitives'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -70,10 +71,13 @@ const MessageAttachment = ({ attachment }: { attachment: Attachment }) => {
   if (isImage) {
     return (
       <a href={attachment.url} target='_blank' rel='noopener noreferrer' className='block mt-2'>
-        <img
+        <Image
           src={attachment.url}
           alt={attachment.name}
+          width={280}
+          height={200}
           className='max-w-[280px] max-h-[200px] object-cover rounded-none border border-[#e0e0e0]'
+          unoptimized
         />
         <span className='text-[10px] text-[#999] mt-0.5 block'>{attachment.name}</span>
       </a>

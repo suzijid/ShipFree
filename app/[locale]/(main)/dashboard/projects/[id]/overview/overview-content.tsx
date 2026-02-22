@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import NextImage from 'next/image'
 
 import { GlassCard, GlassButton, GlassProgress, GlassBadge } from '../../../../components/glass-primitives'
 import { useProject } from '../../../../components/project-context'
@@ -674,7 +675,7 @@ const ActionsChecklistCard = ({
                   onClick={() => handleToggle(action.id, action.completed)}
                   disabled={loadingId === action.id}
                   className={cn(
-                    'relative flex items-center justify-center size-5 rounded-md border-2 shrink-0 transition-all',
+                    'relative flex items-center justify-center size-5 rounded-md border-2 shrink-0 transition-all before:absolute before:inset-[-10px] before:content-[\'\']',
                     action.completed
                       ? 'bg-emerald-500 border-emerald-500 text-white'
                       : 'border-[#ccc] hover:border-[#202020] group-hover:border-[#202020]',
@@ -1433,10 +1434,11 @@ const TeamSection = ({ projectId, userName, userEmail, managerName }: { projectI
           <div className='flex items-center gap-3 mb-3'>
             {managerName ? (
               <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <NextImage
                   src='https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=96&q=80&auto=format&fit=crop'
                   alt={managerName}
+                  width={44}
+                  height={44}
                   className='size-11 rounded-none object-cover shadow-none shrink-0'
                 />
                 <div className='min-w-0'>
@@ -1557,12 +1559,12 @@ const DesignBanner = ({ projectId, userName, userEmail, designBookings }: { proj
       <div className='relative overflow-hidden rounded-none border border-[#e0e0e0]/60'>
         <div className='flex flex-col md:flex-row'>
           <div className='relative w-full md:w-1/3 min-h-[200px]'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <NextImage
               src='https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80&auto=format'
               alt='Design interieur'
-              className='absolute inset-0 w-full h-full object-cover'
-              loading='lazy'
+              fill
+              className='object-cover'
+              sizes='(max-width: 768px) 100vw, 33vw'
             />
           </div>
           <div className='flex-1 bg-white p-6 md:py-6 md:px-8 flex flex-col justify-between'>
@@ -1624,12 +1626,12 @@ const DesignBanner = ({ projectId, userName, userEmail, designBookings }: { proj
       <div className='flex flex-col md:flex-row'>
         {/* Left: Photo */}
         <div className='relative w-full md:w-1/3 min-h-[200px]'>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <NextImage
             src='https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80&auto=format'
             alt='Design intérieur'
-            className='absolute inset-0 w-full h-full object-cover'
-            loading='lazy'
+            fill
+            className='object-cover'
+            sizes='(max-width: 768px) 100vw, 33vw'
           />
         </div>
 

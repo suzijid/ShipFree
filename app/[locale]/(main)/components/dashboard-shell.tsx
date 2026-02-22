@@ -46,6 +46,13 @@ export const DashboardShell = ({ user, children }: DashboardShellProps) => {
     }
   }, [])
 
+  // PWA: register service worker
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    }
+  }, [])
+
   return (
     <div className='flex h-svh'>
       {/* Desktop sidebar — collapsible */}
@@ -70,7 +77,7 @@ export const DashboardShell = ({ user, children }: DashboardShellProps) => {
                   Gradia
                 </span>
               </Link>
-              <button onClick={() => setMobileOpen(false)} className='p-1.5 text-[#767676] hover:text-[#202020] transition-colors' aria-label='Fermer le menu'>
+              <button onClick={() => setMobileOpen(false)} className='p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-[#767676] hover:text-[#202020] transition-colors' aria-label='Fermer le menu'>
                 <X className='size-5' />
               </button>
             </div>
@@ -84,7 +91,7 @@ export const DashboardShell = ({ user, children }: DashboardShellProps) => {
         <header className='h-14 flex items-center px-4 md:px-6 bg-white border-b border-[#e0e0e0] shrink-0'>
           <button
             onClick={() => setMobileOpen(true)}
-            className='md:hidden p-1.5 text-[#767676] hover:text-[#202020] mr-3 transition-colors'
+            className='md:hidden p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-[#767676] hover:text-[#202020] mr-3 transition-colors'
             aria-label='Ouvrir le menu'
           >
             <Menu className='size-5' />
@@ -174,7 +181,7 @@ const DesktopSidebar = ({
         {!collapsed && (
           <button
             onClick={onToggle}
-            className='p-1.5 text-[#767676] hover:text-[#202020] transition-colors'
+            className='p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-[#767676] hover:text-[#202020] transition-colors'
             title='Réduire le menu'
             aria-label='Réduire le menu'
           >
@@ -187,7 +194,7 @@ const DesktopSidebar = ({
       {collapsed && (
         <button
           onClick={onToggle}
-          className='flex items-center justify-center p-1.5 text-[#767676] hover:text-[#202020] transition-colors mb-4 mx-auto'
+          className='flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-[#767676] hover:text-[#202020] transition-colors mb-4 mx-auto'
           title='Agrandir le menu'
           aria-label='Agrandir le menu'
         >
@@ -231,7 +238,7 @@ const DesktopSidebar = ({
               </div>
               <button
                 onClick={handleSignOut}
-                className='p-1.5 text-[#767676] hover:text-[#202020] transition-colors'
+                className='p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-[#767676] hover:text-[#202020] transition-colors'
                 title='Se déconnecter'
                 aria-label='Se déconnecter'
               >
@@ -274,7 +281,7 @@ const NavItem = ({
       href={href}
       title={collapsed ? label : undefined}
       data-tour={tourId}
-      className={`flex items-center py-2.5 text-sm transition-colors ${
+      className={`flex items-center min-h-[44px] py-2.5 text-sm transition-colors ${
         collapsed ? 'justify-center px-0' : 'gap-3 px-3'
       } ${
         isActive
@@ -348,7 +355,7 @@ const MobileSidebarContent = ({
           </div>
           <button
             onClick={handleSignOut}
-            className='p-1.5 text-[#767676] hover:text-[#202020] transition-colors'
+            className='p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-[#767676] hover:text-[#202020] transition-colors'
             title='Se déconnecter'
             aria-label='Se déconnecter'
           >
@@ -386,7 +393,7 @@ const MobileNavItem = ({
     <Link
       href={href}
       onClick={onNavigate}
-      className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+      className={`flex items-center gap-3 px-3 min-h-[44px] py-2.5 text-sm transition-colors ${
         isActive
           ? 'bg-[#202020] text-white'
           : 'text-[#666] hover:bg-[#f5f5f5] hover:text-[#202020]'

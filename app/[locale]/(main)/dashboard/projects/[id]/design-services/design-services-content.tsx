@@ -24,6 +24,7 @@ import {
   Eye,
   User,
 } from 'lucide-react'
+import NextImage from 'next/image'
 import { GlassCard, GlassButton, GlassBadge } from '../../../../components/glass-primitives'
 import { DESIGN_SERVICE_PRICING, type DesignServicePricingKey } from '@/config/payments'
 import {
@@ -266,11 +267,13 @@ const DesignerCard = ({ booking }: { booking: Booking }) => {
   return (
     <div className='flex items-center gap-3 rounded-none bg-[#f5f5f5] px-4 py-3'>
       {booking.designerImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <NextImage
           src={booking.designerImage}
           alt={booking.designerName}
+          width={40}
+          height={40}
           className='size-10 rounded-full object-cover'
+          unoptimized
         />
       ) : (
         <div className='size-10 rounded-full bg-[#202020] flex items-center justify-center text-white text-sm font-bold'>
@@ -374,11 +377,13 @@ const Lightbox = ({
         onClick={(e) => e.stopPropagation()}
       >
         {isImage && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <NextImage
             src={current.url}
             alt={current.name}
+            width={1200}
+            height={800}
             className='max-w-full max-h-[80vh] object-contain'
+            unoptimized
           />
         )}
         {isPdf && (
@@ -467,12 +472,13 @@ const DeliverablesGallery = ({ deliverables }: { deliverables: Deliverable[] }) 
             >
               {isImg ? (
                 <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <NextImage
                     src={d.url}
                     alt={d.name}
-                    className='absolute inset-0 w-full h-full object-cover'
-                    loading='lazy'
+                    fill
+                    className='object-cover'
+                    sizes='(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw'
+                    unoptimized
                   />
                   <div className='absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center'>
                     <Eye className='size-6 text-white opacity-0 group-hover:opacity-100 transition-opacity' />

@@ -14,6 +14,7 @@ import {
   X,
   History,
 } from 'lucide-react'
+import NextImage from 'next/image'
 import { GlassCard, GlassBadge } from '../../../../components/glass-primitives'
 import { useProject } from '../../../../components/project-context'
 import { FILE_CATEGORY_LABELS, ALLOWED_FILE_TYPES, MAX_FILE_SIZE, type FileCategory } from '@/config/project'
@@ -117,10 +118,13 @@ const DocumentPreview = ({
         {/* Content */}
         <div className='flex-1 overflow-auto flex items-center justify-center p-4 min-h-[300px]'>
           {isImage && (
-            <img
+            <NextImage
               src={doc.url}
               alt={doc.name}
+              width={800}
+              height={600}
               className='max-w-full max-h-[70vh] object-contain'
+              unoptimized
             />
           )}
           {isPdf && (

@@ -1,0 +1,20 @@
+{
+  "name": "Gradia",
+  "short_name": "Gradia",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "theme_color": "#b8960c",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
